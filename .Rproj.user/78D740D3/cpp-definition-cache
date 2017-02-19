@@ -20,7 +20,7 @@
                 "column" : 8,
                 "file" : "/Users/jsguinne/Documents/research/aldodevel/src/OrderedCompLik.cpp",
                 "kind" : 6,
-                "line" : 7,
+                "line" : 8,
                 "name" : "covfun(double, double *)",
                 "parent_name" : "",
                 "usr" : "c:@F@covfun#d#*d#"
@@ -29,13 +29,13 @@
                 "column" : 15,
                 "file" : "/Users/jsguinne/Documents/research/aldodevel/src/OrderedCompLik.cpp",
                 "kind" : 6,
-                "line" : 20,
+                "line" : 21,
                 "name" : "OrderedCompLik(NumericVector, NumericVector, NumericMatrix, IntegerMatrix)",
                 "parent_name" : "",
                 "usr" : "c:@F@OrderedCompLik#$@N@Rcpp@C@Vector>#VI14#@N@Rcpp@CT>1#T@PreserveStorage#S0_#$@N@Rcpp@C@Matrix>#VI14#@N@Rcpp@CT>1#T@PreserveStorage#$@N@Rcpp@C@Matrix>#VI13#@N@Rcpp@CT>1#T@PreserveStorage#"
             }
         ],
         "file" : "/Users/jsguinne/Documents/research/aldodevel/src/OrderedCompLik.cpp",
-        "file_last_write" : 1487186918
+        "file_last_write" : 1487473598
     }
 ]

@@ -8,7 +8,7 @@ using namespace std;
 double covfun(double d, double *cparms){
 
     // only exponential implemented so far
-    if( d==0 ){
+    if( d==0.0 ){
         d = cparms[0];
     } else {
         d = cparms[0]*exp(-d/cparms[1])*cparms[3];
@@ -45,7 +45,7 @@ NumericVector OrderedCompLik(NumericVector covparms, NumericVector y,
 
 
 
-    for(i=m; i<n; i++){
+    for(i=m; i<n+1; i++){
 
         //if(i % 100 == 0) printf("%3d\n",i);
         // first, fill in ysub and locsub in reverse order
