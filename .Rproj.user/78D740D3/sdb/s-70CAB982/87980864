@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "\n\n# a vignette showing how to use parallel functions\nlibrary(aldodevel)\n\ngsize <- 320\nnvec <- c(gsize,gsize)\nn <- prod(nvec)\n\n# generate data locations and plot them\nlocs <- simulateGrid(nvec,jittersize=0)\n\n# covariance function and parameters\ncovfun <- maternIsotropic\ncovparms <- c(variance = 4, range = 0.4, smoothness = 1/2, sig2noise = 1)\n\n# simulate some data\n#y <- simulateData(locs,covparms,covfun)\ny <- rnorm(n)\n\n# generate an ordering\nord <- orderMaxMinLocal(locs)\n\n# define ordered locations and observations\nlocsord <- locs[ord,]\nyord <- y[ord]\n\n# find the ordered m nearest neighbors\nm <- 30\nNNarray <- findOrderedNNfast(locsord,m)\nsystem.time( sv0 <- orderedCompLik(covparms,covfun,yord,locsord,NNarray) )\nsystem.time( sv1 <- OrderedCompLik(covparms,yord,locsord,NNarray) )\n#j <- 14\n#sv2 <- t(solve(chol(covfun( locsord[rev(NNarray[j,]),],covparms ))))\nround(sv1-sv2,4)\n\nround(sv1,3)\nround(sv2,3)\nsv1\nlocsord[rev(NNarray[j,]),]\nlocsord[rev(NNarray[j,]),] - sv1\n\nsv3 <- t(chol(covfun( locsord[rev(NNarray[j,]),],covparms )))\nsv3\n\n\n\n\n\n",
+    "created" : 1487362994936.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2072781508",
+    "id" : "87980864",
+    "lastKnownWriteTime" : 1487474167,
+    "last_content_update" : 1487474167301,
+    "path" : "~/Documents/research/aldodevel/vignettes/vignette_parallel.R",
+    "project_path" : "vignettes/vignette_parallel.R",
+    "properties" : {
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
