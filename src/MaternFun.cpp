@@ -1,9 +1,9 @@
 // calculate matern covariances
 
 #include <Rcpp.h>
-#include <boost/math/special_functions/gamma.hpp>
-#include <boost/math/special_functions/pow.hpp>
-#include <boost/math/special_functions/bessel.hpp>
+#include "boost/math/special_functions/gamma.hpp"
+#include "boost/math/special_functions/pow.hpp"
+#include "boost/math/special_functions/bessel.hpp"
 
 // [[Rcpp::export]]
 

@@ -1,19 +1,31 @@
 #include <Rcpp.h>
 #include <math.h>
-using namespace Rcpp;
 #include <iostream>
+#include "boost/math/special_functions/gamma.hpp"
+#include "boost/math/special_functions/pow.hpp"
+#include "boost/math/special_functions/bessel.hpp"
+
+
 using namespace std;
+using namespace Rcpp;
 
 
 double covfun(double d, double *cparms){
 
-    // only exponential implemented so far
-    if( d==0.0 ){
+    // has special cases for 1/2 and 3/2
+    if( d == 0.0 ){
         d = cparms[0];
     } else {
-        d = cparms[0]*exp(-d/cparms[1])*cparms[3];
+        if( cparms[2] == 0.5 ){
+            d = cparms[0]*exp(-d/cparms[1])*cparms[3];
+        } else if( cparms[2] == 1.5 ){
+            d = cparms[0]*(1+d/cparms[1])*exp(-d/cparms[1])*cparms[3];
+        } else {
+            double normcon = cparms[0]/(pow(2.0,cparms[2]-1)*tgamma(cparms[2]));
+            d = normcon*pow( d/cparms[1], cparms[2] )*
+                boost::math::cyl_bessel_k(cparms[2],d/cparms[1]);
+        }
     }
-
     return d;
 }
 

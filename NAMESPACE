@@ -2,6 +2,7 @@
 
 export(findOrderedNNfast)
 export(fitmodel)
+export(fitmodelpp)
 export(getBlockList)
 export(groupNN)
 export(maternFun)
