@@ -59,7 +59,6 @@ NumericVector OrderedCompLik(NumericVector covparms, NumericVector y,
 
     for(i=m; i<n+1; i++){
 
-        //if(i % 100 == 0) printf("%3d\n",i);
         // first, fill in ysub and locsub in reverse order
         for(j=m-1; j>=0; j--){
             locsub[m-1-j][0] = locs( NNarray(i-1,j)-1, 0 );
@@ -67,10 +66,6 @@ NumericVector OrderedCompLik(NumericVector covparms, NumericVector y,
             ysub[m-1-j] = y[ NNarray(i-1,j)-1 ];
         }
 
-        //for(j=1; j<m+1; j++){
-        //    cout << locsub[j-1][0] << " ";
-        //    cout << locsub[j-1][1] << endl;
-        //}
 
         for(k=0;k<m;k++){ for(j=0;j<m;j++){ Li[k][j] = 0.0; }}
 
@@ -78,22 +73,10 @@ NumericVector OrderedCompLik(NumericVector covparms, NumericVector y,
 
         for(j=2; j<m+1; j++){  // j = row of Li
 
-            // print out Li
-            //for(k=1;k<m+1;k++){
-            //    for(el=1;el<m+1;el++){
-            //        printf("%8.4f ",Li[k-1][el-1]);
-            //    }
-            //    printf("\n");
-            //}
-
-            // print out g
-
+            // initialize g
             for(k=1; k<m+1; k++){
                 g[k-1] = 0.0;
-                //printf("%8.4f ",g[k-1]);
             }
-            //cout << endl;
-
 
             // get first j-1 entries of jth row of L (not Linverse!)
             for(k=1; k<j; k++){
@@ -119,9 +102,6 @@ NumericVector OrderedCompLik(NumericVector covparms, NumericVector y,
                 Li[j-1][k-1] = -Li[j-1][k-1]*Li[j-1][j-1];
             }
 
-
-
-
         }
         d = 0.0;
         if(i==m){
@@ -142,24 +122,6 @@ NumericVector OrderedCompLik(NumericVector covparms, NumericVector y,
         }
     }
     ll(0) += -n*log(2*M_PI)/2;
-
-/*    NumericMatrix ll(m,2);
-    for(j=0;j<m;j++){
-        ll(j,0) = locsub[j][0];
-        ll(j,1) = locsub[j][1];
-    }
-*/
-    /*
-    NumericVector y0(m);
-    for(j=0;j<m;j++){ y0[j] = ysub[j]; }
-    */
-
-    //NumericMatrix ll(m,m);
-    //for(j=0;j<m;j++){
-    //    for(k=0;k<m;k++){
-    //        ll(j,k) = Li[j][k];
-    //    }
-    //}
 
     return ll;
 }

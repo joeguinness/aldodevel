@@ -1,0 +1,61 @@
+#include <Rcpp.h>
+#include <math.h>
+#include <iostream>
+#include "boost/math/special_functions/gamma.hpp"
+#include "boost/math/special_functions/pow.hpp"
+#include "boost/math/special_functions/bessel.hpp"
+
+
+using namespace std;
+using namespace Rcpp;
+
+
+double covfun(double d, double *cparms){
+
+    // has special cases for 1/2 and 3/2
+    if( d == 0.0 ){
+        d = cparms[0];
+    } else {
+        if( cparms[2] == 0.5 ){
+            d = cparms[0]*exp(-d/cparms[1])*cparms[3];
+        } else if( cparms[2] == 1.5 ){
+            d = cparms[0]*(1+d/cparms[1])*exp(-d/cparms[1])*cparms[3];
+        } else {
+            double normcon = cparms[0]/(pow(2.0,cparms[2]-1)*tgamma(cparms[2]));
+            d = normcon*pow( d/cparms[1], cparms[2] )*
+                boost::math::cyl_bessel_k(cparms[2],d/cparms[1]);
+        }
+    }
+    return d;
+}
+
+// [[Rcpp::export]]
+NumericVector OrderedCompLik(NumericVector covparms, NumericVector y,
+                             NumericMatrix locs, IntegerMatrix NNarray) {
+
+    //const double PI = 3.141592653589793238463;
+    int i, j, k, el;
+    double cparms[4] = {covparms[0], covparms[1], covparms[2], covparms[3]};
+
+    NumericVector ll(1);
+    int n = y.length();
+    // number of neighbors + 1
+    int m = NNarray.ncol();
+
+    int NN[n][m];
+    for(i=0;i<n;i++){ for(j=0;j<m;j++){ NN[i][j] = NNarray(i,j); }}
+
+    double d;
+    double ysub[m];
+    double locsub[m][2];
+
+    double Li[m][m];
+
+    double g[m];
+    double sig[m];
+
+
+    return ll;
+}
+
+
