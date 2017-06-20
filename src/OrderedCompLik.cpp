@@ -1,9 +1,6 @@
 #include <Rcpp.h>
 #include <math.h>
 #include <iostream>
-#include "boost/math/special_functions/gamma.hpp"
-#include "boost/math/special_functions/pow.hpp"
-#include "boost/math/special_functions/bessel.hpp"
 
 
 using namespace std;
@@ -21,9 +18,9 @@ double covfun(double d, double *cparms){
         } else if( cparms[2] == 1.5 ){
             d = cparms[0]*(1+d/cparms[1])*exp(-d/cparms[1])*cparms[3];
         } else {
-            double normcon = cparms[0]/(pow(2.0,cparms[2]-1)*tgamma(cparms[2]));
+            double normcon = cparms[0]/(pow(2.0,cparms[2]-1)*Rf_gammafn(cparms[2]));
             d = normcon*pow( d/cparms[1], cparms[2] )*
-                boost::math::cyl_bessel_k(cparms[2],d/cparms[1]);
+                Rf_bessel_k(d/cparms[1],cparms[2],1.0);
         }
     }
     return d;
@@ -125,5 +122,3 @@ NumericVector OrderedCompLik(NumericVector covparms, NumericVector y,
 
     return ll;
 }
-
-
