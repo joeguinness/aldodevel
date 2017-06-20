@@ -5,7 +5,7 @@ library(aldodevel)
 
 
 # grid size for data locations
-gsize <- 40
+gsize <- 80
 nvec <- c(gsize,gsize)
 n <- prod(nvec)
 
@@ -36,7 +36,7 @@ yord <- y[ord]
 Xord <- X[ord,]
 
 # find the ordered m nearest neighbors
-m <- 30
+m <- 15
 NNarray <- findOrderedNNfast(locsord,m)
 
 # automatically group the observations
@@ -45,7 +45,7 @@ NNlist[1:4]  # list elements are subsets of rows of NNarray
 
 
 
-# compute exact loglik, ungrouped, and grouped ordered composite logliks
+# compute ungrouped ("apply" and "Rcpp" implementations) and grouped ordered composite logliks
 # system.time(  ll0 <- mvnMargLik(covparms,covfun,y,locs) # only do this if n is small
 system.time(  ll1 <- orderedCompLik(covparms,covfun,yord,locsord,NNarray)      )
 system.time(  ll2 <- OrderedCompLik(covparms,yord,locsord,NNarray)             )
