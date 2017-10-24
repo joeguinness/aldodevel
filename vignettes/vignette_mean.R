@@ -21,6 +21,7 @@ covparms <- c(variance = 4, range = 0.1, smoothness = 1/2, sig2noise = 1)
 # uses Cholesky method so don't try this for large n
 X <- cbind( rep(1,n), locs[,1], locs[,2] )
 beta <- c(1,6,0)
+# simulateData does full covariance calculation. beware!
 y <- X %*% beta + simulateData(locs,covparms,covfun)
 image( matrix(y,nvec) )
 
@@ -37,19 +38,29 @@ Xord <- X[ord,]
 
 # find the ordered m nearest neighbors
 m <- 15
-NNarray <- findOrderedNNfast(locsord,m)
+NNarray <- findOrderedNN_kdtree(locsord,m)
 
 # automatically group the observations
 NNlist <- groupNN(NNarray)
 NNlist[1:4]  # list elements are subsets of rows of NNarray
 
 
-
 # compute ungrouped ("apply" and "Rcpp" implementations) and grouped ordered composite logliks
 # system.time(  ll0 <- mvnMargLik(covparms,covfun,y,locs) # only do this if n is small
+# "apply" implementation (no grouping)
 system.time(  ll1 <- orderedCompLik(covparms,covfun,yord,locsord,NNarray)      )
-system.time(  ll2 <- OrderedCompLik(covparms,yord,locsord,NNarray)             )
+# "apply" implementation (grouping)
 system.time(  ll2 <- orderedGroupCompLik(covparms,covfun,yord,locsord,NNlist)  )
+# Rcpp implementation
+system.time(  ll3 <- OrderedCompLik(covparms,yord,locsord,NNarray)             )
+ll1 - ll3 # should be zero
+
+
+
+
+
+
+# stuff below doesn't work quite yet
 
 
 

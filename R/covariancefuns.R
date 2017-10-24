@@ -74,7 +74,8 @@ maternIsotropic <- function(locs,covparms,returnD1=FALSE){
     # use maternFun to compute isotropic matern covariance
     # locs are locations in a Euclidean space.
     distmat <- rdist(locs)
-    covmat <- maternFun(distmat,covparms,returnD1)
+    #covmat <- maternFun(distmat,covparms,returnD1)
+    covmat <- MaternFun(distmat,covparms)
 
 }
 
@@ -92,7 +93,7 @@ maternSphereTime <- function(locstime,covparms,returnD1=FALSE){
     chordaldist <- 2*sin(rdist.earth(locs,R=1)/2)
     timedist <- rdist(time)
     distmat <- sqrt( chordaldist^2/covparms[2]^2 + timedist^2/covparms[3]^2 )
-    covmat <- maternFun(distmat,c(covparms[1],1,covparms[4],covparms[5]))
+    covmat <- MaternFun(distmat,c(covparms[1],1,covparms[4],covparms[5]))
 }
 
 
@@ -105,5 +106,3 @@ simulateData <- function(locs, covparms, covfun){
     cholmat <- chol(covmat)
     y <- c(t(cholmat) %*% rnorm(n))
 }
-
-

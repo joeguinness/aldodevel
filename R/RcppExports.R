@@ -9,3 +9,19 @@ OrderedCompLik <- function(covparms, y, locs, NNarray) {
     .Call('aldodevel_OrderedCompLik', PACKAGE = 'aldodevel', covparms, y, locs, NNarray)
 }
 
+OrderedCompLik3d <- function(covparms, y, locs, NNarray) {
+    .Call('aldodevel_OrderedCompLik3d', PACKAGE = 'aldodevel', covparms, y, locs, NNarray)
+}
+
+unwhiten3d <- function(covparms, z, locs, NNarray) {
+    .Call('aldodevel_unwhiten3d', PACKAGE = 'aldodevel', covparms, z, locs, NNarray)
+}
+
+whiten3d <- function(covparms, y, locs, NNarray) {
+    .Call('aldodevel_whiten3d', PACKAGE = 'aldodevel', covparms, y, locs, NNarray)
+}
+
+getinvcondsd3d <- function(covparms, y, locs, NNarray) {
+    .Call('aldodevel_getinvcondsd3d', PACKAGE = 'aldodevel', covparms, y, locs, NNarray)
+}
+

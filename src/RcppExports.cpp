@@ -31,3 +31,59 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// OrderedCompLik3d
+NumericVector OrderedCompLik3d(NumericVector covparms, NumericVector y, NumericMatrix locs, IntegerMatrix NNarray);
+RcppExport SEXP aldodevel_OrderedCompLik3d(SEXP covparmsSEXP, SEXP ySEXP, SEXP locsSEXP, SEXP NNarraySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type covparms(covparmsSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type locs(locsSEXP);
+    Rcpp::traits::input_parameter< IntegerMatrix >::type NNarray(NNarraySEXP);
+    rcpp_result_gen = Rcpp::wrap(OrderedCompLik3d(covparms, y, locs, NNarray));
+    return rcpp_result_gen;
+END_RCPP
+}
+// unwhiten3d
+NumericVector unwhiten3d(NumericVector covparms, NumericVector z, NumericMatrix locs, IntegerMatrix NNarray);
+RcppExport SEXP aldodevel_unwhiten3d(SEXP covparmsSEXP, SEXP zSEXP, SEXP locsSEXP, SEXP NNarraySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type covparms(covparmsSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type z(zSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type locs(locsSEXP);
+    Rcpp::traits::input_parameter< IntegerMatrix >::type NNarray(NNarraySEXP);
+    rcpp_result_gen = Rcpp::wrap(unwhiten3d(covparms, z, locs, NNarray));
+    return rcpp_result_gen;
+END_RCPP
+}
+// whiten3d
+NumericVector whiten3d(NumericVector covparms, NumericVector y, NumericMatrix locs, IntegerMatrix NNarray);
+RcppExport SEXP aldodevel_whiten3d(SEXP covparmsSEXP, SEXP ySEXP, SEXP locsSEXP, SEXP NNarraySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type covparms(covparmsSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type locs(locsSEXP);
+    Rcpp::traits::input_parameter< IntegerMatrix >::type NNarray(NNarraySEXP);
+    rcpp_result_gen = Rcpp::wrap(whiten3d(covparms, y, locs, NNarray));
+    return rcpp_result_gen;
+END_RCPP
+}
+// getinvcondsd3d
+NumericVector getinvcondsd3d(NumericVector covparms, NumericVector y, NumericMatrix locs, IntegerMatrix NNarray);
+RcppExport SEXP aldodevel_getinvcondsd3d(SEXP covparmsSEXP, SEXP ySEXP, SEXP locsSEXP, SEXP NNarraySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type covparms(covparmsSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type locs(locsSEXP);
+    Rcpp::traits::input_parameter< IntegerMatrix >::type NNarray(NNarraySEXP);
+    rcpp_result_gen = Rcpp::wrap(getinvcondsd3d(covparms, y, locs, NNarray));
+    return rcpp_result_gen;
+END_RCPP
+}

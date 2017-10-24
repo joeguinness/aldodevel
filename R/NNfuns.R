@@ -14,7 +14,7 @@ findOrderedNN <- function( locs, m ){
     for(j in 1:n ){
         distvec <- c(rdist(locs[1:j,,drop=FALSE],locs[j,,drop=FALSE]) )
         NNarray[j,1:min(m+1,j)] <- order(distvec)[1:min(m+1,j)]
-    }    
+    }
     NNarray
 }
 
@@ -27,27 +27,27 @@ findOrderedNNdistant <- function( locs, m, pnear = 1 ){
 
     # also adds (1-pnear)(m+1) points from the distant past
     # for a total of m+1 neighbors
-    
+
     n <- dim(locs)[1]
     NNarray <- matrix(NA,n,m+1)
     mnear <- floor(pnear*(m+1))
     mfar <- m+1 - mnear
-    
+
     for(j in 1:n ){
         distvec <- c(rdist(locs[1:j,,drop=FALSE],locs[j,,drop=FALSE]) )
         odist <- order(distvec)
-        if( j <= m+1) NNarray[j,1:j] <- odist[1:j]        
+        if( j <= m+1) NNarray[j,1:j] <- odist[1:j]
         if( j > m+1){
             NNarray[j,1:mnear] <- odist[1:mnear]
             if( mfar > 0 ){
                 # have to double check to make sure this has no duplicates
                 # (and that it's doing what I think it is
                 leftinds <- (mnear+1):j
-                inds <- floor( seq(mnear+1,j,length.out=mfar) ) 
+                inds <- floor( seq(mnear+1,j,length.out=mfar) )
                 NNarray[j,(mnear+1):(m+1)] <- odist[inds]
             }
         }
-    }    
+    }
     NNarray
 }
 
@@ -60,7 +60,7 @@ findOrderedNNdistant <- function( locs, m, pnear = 1 ){
 groupNN <- function(NNarray){
     n <- nrow(NNarray)
     m <- ncol(NNarray)-1
-    
+
     clust <- vector("list",n)
     for(j in 1:n) clust[[j]] <- j
     for( ell in 2:(m+1) ){  # 2:(m+1)?
@@ -94,28 +94,28 @@ groupNN <- function(NNarray){
 findOrderedNNfast <- function( locs, m ){
 
     n <- dim(locs)[1]
-    
+
     # number of grid boxes in each dimension
     nside <- ceiling( 1/10*sqrt(n) ) # perhaps change to 2*sqrt(n)
 
     eps <- sqrt(.Machine$double.eps)
-    
+
     # this is a 3D array that will hold the indices of the points
     # within each grid box. This is a bit tricky because we don't
     # know ahead of time how many points are in each grid box. Not sure
     # of the best way to deal with that problem. For now I just pick
     # something big (10*n/nside^2)
-    indcube <- array(0,c(nside,nside,ceiling(10*n/nside^2))) 
-    
+    indcube <- array(0,c(nside,nside,ceiling(10*n/nside^2)))
+
     # rectangular bounds of observation domain
     lims <- matrix( c(apply(locs,2,min)-eps, apply(locs,2,max)+eps ),2,2 )
 
-    # simply round the coordinates to assign them to grid boxes    
+    # simply round the coordinates to assign them to grid boxes
     locround <- ceiling( cbind( nside*(locs[,1]-lims[1,1])/(lims[1,2]-lims[1,1]),
                                 nside*(locs[,2]-lims[2,1])/(lims[2,2]-lims[2,1]) ) )
 
     # could be faster, but this is not the bottle neck.
-    # just puts the indices into indcube, the object that 
+    # just puts the indices into indcube, the object that
     # maps grid boxes to observation indices
     for(j in 1:n){
         inds <- locround[j,]
@@ -123,23 +123,23 @@ findOrderedNNfast <- function( locs, m ){
         indcube[inds[1],inds[2],k] <- j
     }
 
-    # initialize    
+    # initialize
     NNarray <- matrix(NA,n,m+1)
 
     # loop over all of the grid boxes
     for(i1 in 1:nside){
         for(i2 in 1:nside){
-            
+
             # number of observations in current grid box
             # maybe better to initialize indcube with NAs
-            nk <- sum( indcube[i1,i2,] > 0 )    
-            
+            nk <- sum( indcube[i1,i2,] > 0 )
+
             # loop over observation indices
             for(k in seq(length.out=nk) ){
                 j <- indcube[i1,i2,k]
-                
+
                 # s gives the number of neighboring grid boxes to search
-                # s=1 means search current and adjacent 8 grid boxes 
+                # s=1 means search current and adjacent 8 grid boxes
                 s <- max(1,floor( 1/2*nside^2/j ))
                 subind = c()
                 nlocal <- 0
@@ -163,3 +163,47 @@ findOrderedNNfast <- function( locs, m ){
     }
     return(NNarray)
 }
+
+
+# this algorithm is a modification of the kdtree
+# algorithm in the FNN package, adapted to the setting
+# where the nearest neighbors must come from previous
+# in the ordering
+#' @export
+#' @importFrom FNN
+findOrderedNN_kdtree <- function(locs,m,mult=2,printsearch=FALSE){
+
+    n <- nrow(locs)
+    NNarray <- matrix(NA,n,m+1)
+    NNarray[,1] <- 1:n
+    NNarray[1:(mult*m+1),] <- findOrderedNN(locs[1:(mult*m+1),],m)
+
+    query_inds <- (mult*m+2):n
+    data_inds <- 1:n
+
+    msearch <- m
+
+    while( length(query_inds) > 0 ){
+
+        msearch <- min( max(query_inds), 2*msearch )
+        data_inds <- 1:max(query_inds)
+        NN <- FNN::get.knnx( locs[data_inds,,drop=FALSE], locs[query_inds,,drop=FALSE], msearch )$nn.index
+        less_than_k <- t(sapply( 1:nrow(NN), function(k) NN[k,] <= query_inds[k]  ))
+        sum_less_than_k <- apply(less_than_k,1,sum)
+        ind_less_than_k <- which(sum_less_than_k >= m+1)
+        NN_less_than_k <- NN[ind_less_than_k,]
+
+        NN_m <- t(sapply(ind_less_than_k,function(k) NN[k,][less_than_k[k,]][1:(m+1)] ))
+
+        NNarray[ query_inds[ind_less_than_k], ] <- NN_m
+
+        query_inds <- query_inds[-ind_less_than_k]
+        if( printsearch ) print(length(query_inds))
+
+    }
+
+    return(NNarray)
+}
+
+
+
