@@ -204,7 +204,7 @@ findOrderedNNfast <- function( locs, m ){
 # where the nearest neighbors must come from previous
 # in the ordering
 #' @export
-# #' @importFrom FNN
+#' @useDynLib FNN
 findOrderedNN_kdtree <- function(locs,m,mult=2,printsearch=FALSE){
 
     n <- nrow(locs)
@@ -221,7 +221,7 @@ findOrderedNN_kdtree <- function(locs,m,mult=2,printsearch=FALSE){
 
         msearch <- min( max(query_inds), 2*msearch )
         data_inds <- 1:max(query_inds)
-        NN <- FNN::get.knnx( locs[data_inds,,drop=FALSE], locs[query_inds,,drop=FALSE], msearch )$nn.index
+        NN <- get.knnx_aldo( locs[data_inds,,drop=FALSE], locs[query_inds,,drop=FALSE], msearch )$nn.index
         less_than_k <- t(sapply( 1:nrow(NN), function(k) NN[k,] <= query_inds[k]  ))
         sum_less_than_k <- apply(less_than_k,1,sum)
         ind_less_than_k <- which(sum_less_than_k >= m+1)
@@ -238,6 +238,54 @@ findOrderedNN_kdtree <- function(locs,m,mult=2,printsearch=FALSE){
 
     return(NNarray)
 }
+
+
+
+# this is a minor modification to FNN::get.knnx
+# added PACKAGE = "FNN" to the call to .C
+get.knnx_aldo <- function (data, query, k = 10, algorithm = c("kd_tree", "cover_tree",
+                                             "CR", "brute"))
+{
+    algorithm <- match.arg(algorithm)
+    if (!is.matrix(data))
+        data <- as.matrix(data)
+    if (!is.numeric(data))
+        stop("Data non-numeric")
+    if (any(is.na(data)))
+        stop("Data include NAs")
+    if (storage.mode(data) == "integer")
+        storage.mode(data) <- "double"
+    if (!is.matrix(query))
+        query <- as.matrix(query)
+    if (!is.numeric(query))
+        stop("Data non-numeric")
+    if (any(is.na(query)))
+        stop("Data include NAs")
+    if (storage.mode(query) == "integer")
+        storage.mode(query) <- "double"
+    n <- nrow(data)
+    m <- nrow(query)
+    d <- ncol(data)
+    p <- ncol(query)
+    if (d != p)
+        stop("Number of columns must be same!.")
+    if (k > n)
+        warning("k should be less than sample size!")
+    Cname <- switch(algorithm, cover_tree = "get_KNNX_cover",
+                    kd_tree = "get_KNNX_kd", CR = "get_KNNX_CR", brute = "get_KNNX_brute")
+    knnres <- .C(Cname, t(data), t(query), as.integer(k), d,
+                 n, m, nn.index = integer(m * k), nn.dist = double(m *
+                                                                       k), DUP = FALSE, PACKAGE = "FNN")
+    nn.index <- matrix(knnres$nn.index, byrow = T, nrow = m,
+                       ncol = k)
+    nn.dist <- matrix(knnres$nn.dist, byrow = T, nrow = m, ncol = k)
+    if (k > n) {
+        nn.index[, (n + 1):k] <- NA
+        nn.dist[, (n + 1):k] <- NA
+    }
+    return(list(nn.index = nn.index, nn.dist = nn.dist))
+}
+
 
 
 
