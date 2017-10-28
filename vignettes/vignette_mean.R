@@ -1,17 +1,20 @@
 
 
 # a short vignette demonstrating how to use the functions
-library(aldodevel)
+#library(aldodevel)
+rm(list=ls())
+# load all package functions
+devtools::load_all(".")
 
 
 # grid size for data locations
-gsize <- 80
+gsize <- 230
 nvec <- c(gsize,gsize)
 n <- prod(nvec)
 
 # generate data locations and plot them
 locs <- simulateGrid(nvec,jittersize=0)
-plot(locs[,1],locs[,2])
+#plot(locs[,1],locs[,2])
 
 # covariance function and parameters
 covfun <- maternIsotropic
@@ -22,14 +25,15 @@ covparms <- c(variance = 4, range = 0.1, smoothness = 1/2, sig2noise = 1)
 X <- cbind( rep(1,n), locs[,1], locs[,2] )
 beta <- c(1,6,0)
 # simulateData does full covariance calculation. beware!
-y <- X %*% beta + simulateData(locs,covparms,covfun)
-image( matrix(y,nvec) )
+#y <- X %*% beta + simulateData(locs,covparms,covfun)
+y <- rnorm(n)
+#image( matrix(y,nvec) )
 
 # generate an ordering and plot the first n/8
 ord <- orderMaxMinLocal(locs)
 #ord <- 1:n
 n0 <- round(n/8)
-plot( locs[ord[1:n0],1],locs[ord[1:n0],2] )
+#plot( locs[ord[1:n0],1],locs[ord[1:n0],2] )
 
 # define ordered locations and observations
 locsord <- locs[ord,]
@@ -41,8 +45,8 @@ m <- 15
 NNarray <- findOrderedNN_kdtree(locsord,m)
 
 # automatically group the observations
-NNlist <- groupNN(NNarray)
-NNlist[1:4]  # list elements are subsets of rows of NNarray
+NNlist <- groupNN3(NNarray)
+#NNlist[1:10]  # list elements are subsets of rows of NNarray
 
 
 # compute ungrouped ("apply" and "Rcpp" implementations) and grouped ordered composite logliks
@@ -51,11 +55,12 @@ NNlist[1:4]  # list elements are subsets of rows of NNarray
 system.time(  ll1 <- orderedCompLik(covparms,covfun,yord,locsord,NNarray)      )
 # "apply" implementation (grouping)
 system.time(  ll2 <- orderedGroupCompLik(covparms,covfun,yord,locsord,NNlist)  )
-# Rcpp implementation
+# Rcpp implementation (no grouping)
 system.time(  ll3 <- OrderedCompLik(covparms,yord,locsord,NNarray)             )
 ll1 - ll3 # should be zero
-
-
+# Rcpp implementation (grouping)
+system.time(  ll4 <- OrderedGroupCompLik(covparms,yord,locsord,NNlist)  )
+ll2-ll4
 
 
 

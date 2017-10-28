@@ -87,6 +87,40 @@ groupNN <- function(NNarray){
 
 
 
+# take in an array of nearest neighbors, and automatically group
+# the observations into groups that share neighbors
+# this is helpful to speed the computations and improve their accuracy
+# this is the same as groupNN except uses a cubed criterion
+#' @export
+groupNN3 <- function(NNarray){
+    n <- nrow(NNarray)
+    m <- ncol(NNarray)-1
+
+    clust <- vector("list",n)
+    for(j in 1:n) clust[[j]] <- j
+    for( ell in 2:(m+1) ){  # 2:(m+1)?
+        sv <- which( NNarray[,1] - NNarray[,ell] < n )
+        for(j in sv){
+            k <- NNarray[j,ell]
+            if( length(clust[[k]]) > 0){
+                nunique <- length(unique(c(NNarray[c(clust[[j]],clust[[k]]),])))
+
+                # this is the rule for deciding whether two groups
+                # should be combined
+                if( nunique^3 <= length(unique(c(NNarray[clust[[j]],])))^3 + length(unique(c(NNarray[clust[[k]],])))^3 ) {
+                    clust[[j]] <- c(clust[[j]],clust[[k]])
+                    clust[[k]] <- numeric(0)
+                }
+            }
+        }
+    }
+    zeroinds <- unlist(lapply(clust,length)==0)
+    clust[zeroinds] <- NULL
+    NNlist <- lapply(clust,function(inds) NNarray[inds,,drop=FALSE])
+    return(NNlist)
+}
+
+
 # faster algorithm to find nearest neighbors. This one splits the
 # observation domain into grid boxes and searches neighboring
 # grid boxes to find neighbors
@@ -170,7 +204,7 @@ findOrderedNNfast <- function( locs, m ){
 # where the nearest neighbors must come from previous
 # in the ordering
 #' @export
-#' @importFrom FNN
+# #' @importFrom FNN
 findOrderedNN_kdtree <- function(locs,m,mult=2,printsearch=FALSE){
 
     n <- nrow(locs)

@@ -2,26 +2,30 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 MaternFun <- function(distmat, covparms) {
-    .Call('aldodevel_MaternFun', PACKAGE = 'aldodevel', distmat, covparms)
+    .Call('_aldodevel_MaternFun', PACKAGE = 'aldodevel', distmat, covparms)
 }
 
 OrderedCompLik <- function(covparms, y, locs, NNarray) {
-    .Call('aldodevel_OrderedCompLik', PACKAGE = 'aldodevel', covparms, y, locs, NNarray)
+    .Call('_aldodevel_OrderedCompLik', PACKAGE = 'aldodevel', covparms, y, locs, NNarray)
 }
 
 OrderedCompLik3d <- function(covparms, y, locs, NNarray) {
-    .Call('aldodevel_OrderedCompLik3d', PACKAGE = 'aldodevel', covparms, y, locs, NNarray)
+    .Call('_aldodevel_OrderedCompLik3d', PACKAGE = 'aldodevel', covparms, y, locs, NNarray)
+}
+
+OrderedGroupCompLik <- function(covparms, y, locs, NNlist) {
+    .Call('_aldodevel_OrderedGroupCompLik', PACKAGE = 'aldodevel', covparms, y, locs, NNlist)
 }
 
 unwhiten3d <- function(covparms, z, locs, NNarray) {
-    .Call('aldodevel_unwhiten3d', PACKAGE = 'aldodevel', covparms, z, locs, NNarray)
+    .Call('_aldodevel_unwhiten3d', PACKAGE = 'aldodevel', covparms, z, locs, NNarray)
 }
 
 whiten3d <- function(covparms, y, locs, NNarray) {
-    .Call('aldodevel_whiten3d', PACKAGE = 'aldodevel', covparms, y, locs, NNarray)
+    .Call('_aldodevel_whiten3d', PACKAGE = 'aldodevel', covparms, y, locs, NNarray)
 }
 
 getinvcondsd3d <- function(covparms, y, locs, NNarray) {
-    .Call('aldodevel_getinvcondsd3d', PACKAGE = 'aldodevel', covparms, y, locs, NNarray)
+    .Call('_aldodevel_getinvcondsd3d', PACKAGE = 'aldodevel', covparms, y, locs, NNarray)
 }
 
