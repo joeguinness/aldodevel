@@ -8,7 +8,7 @@ devtools::load_all(".")
 
 
 # grid size for data locations
-gsize <- 230
+gsize <- 100
 nvec <- c(gsize,gsize)
 n <- prod(nvec)
 
@@ -41,7 +41,7 @@ yord <- y[ord]
 Xord <- X[ord,]
 
 # find the ordered m nearest neighbors
-m <- 15
+m <- 30
 NNarray <- findOrderedNN_kdtree(locsord,m)
 
 # automatically group the observations
@@ -61,6 +61,8 @@ ll1 - ll3 # should be zero
 # Rcpp implementation (grouping)
 system.time(  ll4 <- OrderedGroupCompLik(covparms,yord,locsord,NNlist)  )
 ll2-ll4
+system.time(  ll5 <- OrderedGroupCompLik2(covparms,yord,locsord,NNlist)  )
+ll5-ll4
 
 
 
@@ -68,7 +70,7 @@ ll2-ll4
 # stuff below doesn't work quite yet
 
 
-
+if(FALSE){
 # an attempt to write a wrapper function to do all of this stuff:
 # ordering, finding neighbors, maximizing parameters
 # only covariance function implemented is isotropic matern
@@ -113,7 +115,7 @@ result$par
 result2$par
 
 
-
+}
 
 
 
