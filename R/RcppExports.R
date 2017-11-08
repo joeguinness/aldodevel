@@ -21,6 +21,10 @@ OrderedGroupCompLik2 <- function(covparms, y, locs, NNlist) {
     .Call('_aldodevel_OrderedGroupCompLik2', PACKAGE = 'aldodevel', covparms, y, locs, NNlist)
 }
 
+OrderedGroupCompLik3 <- function(covparms, y, locs, NNlist) {
+    .Call('_aldodevel_OrderedGroupCompLik3', PACKAGE = 'aldodevel', covparms, y, locs, NNlist)
+}
+
 unwhiten3d <- function(covparms, z, locs, NNarray) {
     .Call('_aldodevel_unwhiten3d', PACKAGE = 'aldodevel', covparms, z, locs, NNarray)
 }

@@ -73,6 +73,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// OrderedGroupCompLik3
+NumericVector OrderedGroupCompLik3(NumericVector covparms, NumericVector y, NumericMatrix locs, List NNlist);
+RcppExport SEXP _aldodevel_OrderedGroupCompLik3(SEXP covparmsSEXP, SEXP ySEXP, SEXP locsSEXP, SEXP NNlistSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type covparms(covparmsSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type locs(locsSEXP);
+    Rcpp::traits::input_parameter< List >::type NNlist(NNlistSEXP);
+    rcpp_result_gen = Rcpp::wrap(OrderedGroupCompLik3(covparms, y, locs, NNlist));
+    return rcpp_result_gen;
+END_RCPP
+}
 // unwhiten3d
 NumericVector unwhiten3d(NumericVector covparms, NumericVector z, NumericMatrix locs, IntegerMatrix NNarray);
 RcppExport SEXP _aldodevel_unwhiten3d(SEXP covparmsSEXP, SEXP zSEXP, SEXP locsSEXP, SEXP NNarraySEXP) {
@@ -122,6 +136,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_aldodevel_OrderedCompLik3d", (DL_FUNC) &_aldodevel_OrderedCompLik3d, 4},
     {"_aldodevel_OrderedGroupCompLik", (DL_FUNC) &_aldodevel_OrderedGroupCompLik, 4},
     {"_aldodevel_OrderedGroupCompLik2", (DL_FUNC) &_aldodevel_OrderedGroupCompLik2, 4},
+    {"_aldodevel_OrderedGroupCompLik3", (DL_FUNC) &_aldodevel_OrderedGroupCompLik3, 4},
     {"_aldodevel_unwhiten3d", (DL_FUNC) &_aldodevel_unwhiten3d, 4},
     {"_aldodevel_whiten3d", (DL_FUNC) &_aldodevel_whiten3d, 4},
     {"_aldodevel_getinvcondsd3d", (DL_FUNC) &_aldodevel_getinvcondsd3d, 4},

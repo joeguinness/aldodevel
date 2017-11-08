@@ -63,6 +63,9 @@ system.time(  ll4 <- OrderedGroupCompLik(covparms,yord,locsord,NNlist)  )
 ll2-ll4
 system.time(  ll5 <- OrderedGroupCompLik2(covparms,yord,locsord,NNlist)  )
 ll5-ll4
+# this one still isn't right, and it's slower
+system.time(  ll6 <- OrderedGroupCompLik3(covparms,yord,locsord,NNlist)  )
+ll6-ll4
 
 
 
