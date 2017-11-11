@@ -1,14 +1,17 @@
 #include <Rcpp.h>
 #include <math.h>
 #include <iostream>
+#include <vector>
 #include "covfuns.h"
 
 using namespace std;
 using namespace Rcpp;
+// [[Rcpp::plugins(cpp11)]]
 
 
 // [[Rcpp::export]]
-NumericVector OrderedCompLik(NumericVector covparms, NumericVector y,
+NumericVector OrderedCompLik(NumericVector covparms, StringVector covfun_name,
+                             NumericVector y,
                              NumericMatrix locs, IntegerMatrix NNarray) {
 
     //const double PI = 3.141592653589793238463;
@@ -33,6 +36,12 @@ NumericVector OrderedCompLik(NumericVector covparms, NumericVector y,
     double g[m];
     double sig[m];
 
+    int dim = locs.ncol();
+
+    vector<double> loc1(dim);
+    vector<double> loc2(dim);
+
+    const auto covfun = Matern_from_dist;
 
 
     for(i=m; i<n+1; i++){
@@ -47,7 +56,8 @@ NumericVector OrderedCompLik(NumericVector covparms, NumericVector y,
 
         for(k=0;k<m;k++){ for(j=0;j<m;j++){ Li[k][j] = 0.0; }}
 
-        Li[1-1][1-1] = pow( covfun(0, cparms), -0.5 );
+        for(k=0;k<dim;k++){ loc1[k] = locsub[0][k]; }
+        Li[1-1][1-1] = pow( Matern_from_locs(loc1, loc1, cparms), -0.5 );
 
         for(j=2; j<m+1; j++){  // j = row of Li
 
@@ -56,11 +66,20 @@ NumericVector OrderedCompLik(NumericVector covparms, NumericVector y,
                 g[k-1] = 0.0;
             }
 
+            for(el=0;el<dim;el++){ loc1[el] = locsub[j-1][el]; }
+
             // get first j-1 entries of jth row of L (not Linverse!)
             for(k=1; k<j; k++){
+
+
+                for(el=0;el<dim;el++){
+                    loc2[el] = locsub[k-1][el];
+                }
+
                 d = pow( pow(locsub[k-1][0] - locsub[j-1][0],2) +
                           pow(locsub[k-1][1] - locsub[j-1][1],2), 0.5 );
                 sig[k-1] = covfun(d,cparms);
+                //sig[k-1] = Matern_from_locs(loc1,loc2,cparms);
                 g[k-1] = 0.0;
                 for(el=1; el<k+1; el++){
                     g[k-1] += Li[k-1][el-1]*sig[el-1];

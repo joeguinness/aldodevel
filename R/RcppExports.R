@@ -5,12 +5,8 @@ MaternFun <- function(distmat, covparms) {
     .Call('_aldodevel_MaternFun', PACKAGE = 'aldodevel', distmat, covparms)
 }
 
-OrderedCompLik <- function(covparms, y, locs, NNarray) {
-    .Call('_aldodevel_OrderedCompLik', PACKAGE = 'aldodevel', covparms, y, locs, NNarray)
-}
-
-OrderedCompLik3d <- function(covparms, y, locs, NNarray) {
-    .Call('_aldodevel_OrderedCompLik3d', PACKAGE = 'aldodevel', covparms, y, locs, NNarray)
+OrderedCompLik <- function(covparms, covfun_name, y, locs, NNarray) {
+    .Call('_aldodevel_OrderedCompLik', PACKAGE = 'aldodevel', covparms, covfun_name, y, locs, NNarray)
 }
 
 OrderedGroupCompLik <- function(covparms, y, locs, NNlist) {
@@ -19,21 +15,5 @@ OrderedGroupCompLik <- function(covparms, y, locs, NNlist) {
 
 OrderedGroupCompLik2 <- function(covparms, y, locs, NNlist) {
     .Call('_aldodevel_OrderedGroupCompLik2', PACKAGE = 'aldodevel', covparms, y, locs, NNlist)
-}
-
-OrderedGroupCompLik3 <- function(covparms, y, locs, NNlist) {
-    .Call('_aldodevel_OrderedGroupCompLik3', PACKAGE = 'aldodevel', covparms, y, locs, NNlist)
-}
-
-unwhiten3d <- function(covparms, z, locs, NNarray) {
-    .Call('_aldodevel_unwhiten3d', PACKAGE = 'aldodevel', covparms, z, locs, NNarray)
-}
-
-whiten3d <- function(covparms, y, locs, NNarray) {
-    .Call('_aldodevel_whiten3d', PACKAGE = 'aldodevel', covparms, y, locs, NNarray)
-}
-
-getinvcondsd3d <- function(covparms, y, locs, NNarray) {
-    .Call('_aldodevel_getinvcondsd3d', PACKAGE = 'aldodevel', covparms, y, locs, NNarray)
 }
 

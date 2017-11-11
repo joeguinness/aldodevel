@@ -26,6 +26,12 @@ NumericVector OrderedGroupCompLik(NumericVector covparms, NumericVector y,
 
     int nblock = NNlist.length();
 
+    vector<double> loc1(dim);
+    vector<double> loc2(dim);
+
+    const auto covfun = Matern_from_dist;
+
+
     for(i=0; i<nblock; i++){
 
         // extract the block that we need

@@ -152,58 +152,66 @@ mvnCondLik <- function( covparms, covfun, y, locs, lastk = 1, returnD1 = FALSE )
 
 # using mvnCondLik to get exact loglikelihood
 #' @export
-mvnMargLik <- function(covparms,covfun,y,locs){
-    lastk = length(y)
-    mvnCondLik(covparms,covfun,y,locs,lastk)
+exactLik <- function(covparms,covfun,y,locs){
+
+    n <- length(y)
+    covmat <- covfun(locs,covparms)
+    cholmat <- t(chol(covmat))
+    z <- forwardsolve(cholmat,y)
+    quadform <- sum( z^2 )
+    logdet <- 2*sum(log(diag(cholmat)))
+    loglik <- -1/2*( n*log(2*pi) + logdet + quadform )
+    return(loglik)
+
 }
 
 # auxiliary function that takes in the whole dataset
 # as well as a set of indices. Function returns the
 # exact loglikelihood for the data with indices 'inds'
 # used with lapply in the next function
-mvnMargLikInds <- function(inds,covparms,covfun,y,locs){
-    mvnMargLik(covparms,covfun,y[inds],locs[inds,])
-}
+# mvnMargLikInds <- function(inds,covparms,covfun,y,locs){
+#     mvnMargLik(covparms,covfun,y[inds],locs[inds,])
+# }
 
 # blocklist is a list whose elements are vectors of indices
 # that define the blocks
-#' @export
-mvnIndepBlocks <- function(covparms,covfun,y,locs,blocklist){
-
-    # blocklist is a list. each list element is a vector
-    # of indices, defining the blocks.
-    liklist <- lapply(blocklist,mvnMargLikInds,
-                      covparms=covparms,covfun=covfun,y=y,locs=locs)
-    return(sum(unlist(liklist)))
-}
+# #' @export
+# mvnIndepBlocks <- function(covparms,covfun,y,locs,blocklist){
+#
+#     # blocklist is a list. each list element is a vector
+#     # of indices, defining the blocks.
+#     liklist <- lapply(blocklist,mvnMargLikInds,
+#                       covparms=covparms,covfun=covfun,y=y,locs=locs)
+#     return(sum(unlist(liklist)))
+# }
 
 
 # function n1*n2 recangular blocks and returning
 # a list of indices for locations that fall inside
 # each of the rectangular blocks.
 # Used as input to mvnIndepBlocks
-#' @export
-getBlockList <- function(locs,n1,n2){
-
-    # blocks the rectangle enclosing locs into a
-    # n1 x n2 grid, and returns a list of the indices
-    # of locs that fall in each block
-    n <- nrow(locs)
-    r1 <- range(locs[,1])
-    r2 <- range(locs[,2])
-    locsround <- matrix(0,n,2)
-    locsround[,1] <- floor( (locs[,1] - r1[1])/diff(r1)*(n1-1e-6) + 1)
-    locsround[,2] <- floor( (locs[,2] - r2[1])/diff(r2)*(n2-1e-6) + 1)
-    blocklist <- vector("list",length=n1*n2)
-    for(j1 in 1:n1){
-        for(j2 in 1:n2){
-            blocklist[[(j1-1)*n2 + j2]] <- which(locsround[,1]==j1 & locsround[,2]==j2)
-        }
-    }
-    npoints <- sapply( blocklist,length )
-    blocklist[npoints==0] <- NULL
-    return(blocklist)
-}
+# #' @export
+# getBlockList <- function(locs,n1,n2){
+#
+#     # blocks the rectangle enclosing locs into a
+#     # n1 x n2 grid, and returns a list of the indices
+#     # of locs that fall in each block
+#     n <- nrow(locs)
+#     r1 <- range(locs[,1])
+#     r2 <- range(locs[,2])
+#     locsround <- matrix(0,n,2)
+#     locsround[,1] <- floor( (locs[,1] - r1[1])/diff(r1)*(n1-1e-6) + 1)
+#     locsround[,2] <- floor( (locs[,2] - r2[1])/diff(r2)*(n2-1e-6) + 1)
+#     blocklist <- vector("list",length=n1*n2)
+#     for(j1 in 1:n1){
+#         for(j2 in 1:n2){
+#             blocklist[[(j1-1)*n2 + j2]] <- which(locsround[,1]==j1 & locsround[,2]==j2)
+#         }
+#     }
+#     npoints <- sapply( blocklist,length )
+#     blocklist[npoints==0] <- NULL
+#     return(blocklist)
+# }
 
 
 
@@ -213,75 +221,75 @@ getBlockList <- function(locs,n1,n2){
 # L^{-1} is the approximation to the inverse Cholesky
 # implied by the Vecchia approximation, and X
 # is an n x p matrix
-sparseInvCholSolveRows <- function( indarray, covparms, covfun, X, locs ){
-
-    inds1 <- indarray[,1]
-    allinds <- sort(unique(c(indarray)), na.last = NA)
-    likinds <- which( allinds %in% inds1 )
-
-    locs0 <- locs[allinds,,drop=FALSE]
-
-    X0 <- X[allinds,,drop=FALSE]
-    #distmat <- rdist(locs0,locs0)
-    covmat  <- covfun( locs0, covparms, returnD1 = FALSE )
-    cholmat <- tryCatch(t(chol(covmat)) , error = function(a) numeric(0) )
-    if( length(cholmat) == 0 ){
-        # sometimes the covmat is not numerically positive definite.
-        # we probably need a better solution for this.
-        #print("One of the Choleskys failed")
-        return(cbind(allinds[likinds],X0[likinds,,drop=FALSE]))
-    }
-
-    # decorrelating transform
-    Z0 <- forwardsolve(cholmat,X0)
-    return(cbind(allinds[likinds],Z0[likinds,,drop=FALSE]))
-
-}
+# sparseInvCholSolveRows <- function( indarray, covparms, covfun, X, locs ){
+#
+#     inds1 <- indarray[,1]
+#     allinds <- sort(unique(c(indarray)), na.last = NA)
+#     likinds <- which( allinds %in% inds1 )
+#
+#     locs0 <- locs[allinds,,drop=FALSE]
+#
+#     X0 <- X[allinds,,drop=FALSE]
+#     #distmat <- rdist(locs0,locs0)
+#     covmat  <- covfun( locs0, covparms, returnD1 = FALSE )
+#     cholmat <- tryCatch(t(chol(covmat)) , error = function(a) numeric(0) )
+#     if( length(cholmat) == 0 ){
+#         # sometimes the covmat is not numerically positive definite.
+#         # we probably need a better solution for this.
+#         #print("One of the Choleskys failed")
+#         return(cbind(allinds[likinds],X0[likinds,,drop=FALSE]))
+#     }
+#
+#     # decorrelating transform
+#     Z0 <- forwardsolve(cholmat,X0)
+#     return(cbind(allinds[likinds],Z0[likinds,,drop=FALSE]))
+#
+# }
 
 
 # this is the wrapper that calls lapply and cleans up
-sparseInvCholSolve <- function( NNlist, covparms, covfun, X, locs ){
-
-    Zlist <- lapply(NNlist, sparseInvCholSolveRows, covparms,covfun,X,locs)
-    dimX <- dim(X)
-    Z <- array(NA, dimX )
-    for(j in 1:length(NNlist)){
-        #print(Zlist[[j]])
-        Z[ Zlist[[j]][,1], ] <- Zlist[[j]][,2:(dimX[2]+1)]
-    }
-    return( Z )
-
-}
-
-
+# sparseInvCholSolve <- function( NNlist, covparms, covfun, X, locs ){
+#
+#     Zlist <- lapply(NNlist, sparseInvCholSolveRows, covparms,covfun,X,locs)
+#     dimX <- dim(X)
+#     Z <- array(NA, dimX )
+#     for(j in 1:length(NNlist)){
+#         #print(Zlist[[j]])
+#         Z[ Zlist[[j]][,1], ] <- Zlist[[j]][,2:(dimX[2]+1)]
+#     }
+#     return( Z )
+#
+# }
 
 
-#' @export
-orderedGroupCompProfLik <- function( covparms, covfun, y, X, locs, NNlist ){
 
-    # profile out regression coefficients
-    # profile out overall variance
-    dimX <- dim(X)
-    n <- dimX[1]
-    p <- dimX[2]
-    yandX <- cbind(y,X)
-    covparms[1] <- 1
-    Z <- sparseInvCholSolve( NNlist, covparms, covfun, yandX, locs )
-    Zcross <- crossprod( Z[,2:(p+1)] )
-    if( min( eigen(Zcross)$values ) < 1e-6 ||
-        max( eigen(Zcross)$values ) > 1e20 ) return(list(loglik=-999999))
-    #print( crossprod( Z[,2:(p+1)] ) )
-    betacovmat <- solve( Zcross )
-    betahat <- betacovmat %*% crossprod( Z[,2:(p+1)],Z[,1] )
-    y0 <- y - X %*% betahat
-    Z <- sparseInvCholSolve(NNlist,covparms,covfun,y0,locs)
-    sigmasq <- c(crossprod( Z )/n)
-    covparms[1] <- sigmasq
-    #print(covparms)
-    loglik <- orderedGroupCompLik( covparms, covfun, y0, locs, NNlist )
-    return(list(loglik=loglik, sigmasq = sigmasq,
-                betahat = betahat, betacovmat = sigmasq*betacovmat))
-}
+
+# #' @export
+# orderedGroupCompProfLik <- function( covparms, covfun, y, X, locs, NNlist ){
+#
+#     # profile out regression coefficients
+#     # profile out overall variance
+#     dimX <- dim(X)
+#     n <- dimX[1]
+#     p <- dimX[2]
+#     yandX <- cbind(y,X)
+#     covparms[1] <- 1
+#     Z <- sparseInvCholSolve( NNlist, covparms, covfun, yandX, locs )
+#     Zcross <- crossprod( Z[,2:(p+1)] )
+#     if( min( eigen(Zcross)$values ) < 1e-6 ||
+#         max( eigen(Zcross)$values ) > 1e20 ) return(list(loglik=-999999))
+#     #print( crossprod( Z[,2:(p+1)] ) )
+#     betacovmat <- solve( Zcross )
+#     betahat <- betacovmat %*% crossprod( Z[,2:(p+1)],Z[,1] )
+#     y0 <- y - X %*% betahat
+#     Z <- sparseInvCholSolve(NNlist,covparms,covfun,y0,locs)
+#     sigmasq <- c(crossprod( Z )/n)
+#     covparms[1] <- sigmasq
+#     #print(covparms)
+#     loglik <- orderedGroupCompLik( covparms, covfun, y0, locs, NNlist )
+#     return(list(loglik=loglik, sigmasq = sigmasq,
+#                 betahat = betahat, betacovmat = sigmasq*betacovmat))
+# }
 
 
 
@@ -291,110 +299,110 @@ orderedGroupCompProfLik <- function( covparms, covfun, y, X, locs, NNlist ){
 # wrapper function for model fitting
 # uses grouped profile likelihood, maxmindist ordering implemented,
 # right now, cannot fix variance parameter, always profiled out
-#' @export
-fitmodel <- function(y, X, locs, covfun, numneighbors = 30, orderfun = "maxmindist",
-                     fixedparameters = NA ){
-
-    start_time = proc.time()
-    # need to add capability for including a linear mean
-    n <- length(y)
-
-    # check to see if the number of data points matches the
-    # number of spatial locations
-    if( nrow(locs) != n ) stop("length of y not equal to number of locations")
-
-    # order the points according to orderfun argument
-    # only maxmindist implemented. Others are easy too
-    cat("Finding Max/Min Ordering...")
-    if( orderfun == "maxmindist" ){
-        ord <- orderMaxMinLocal(locs)
-    } else {
-        stop("Unrecognized ordering method specified in orderfun argument")
-    }
-    cat("Done \n")
-
-
-    # define link functions for each parameter, i.e. take logs of
-    # positive-valued parameters, logit of parameters in (0,1)
-    if( identical(covfun,maternIsotropic, ignore.environment = TRUE) ){
-        linkfun <- list( function(x) log(x), function(x) log(x), function(x) log(x), function(x) log(x)/log(1-x) )
-        invlinkfun <- list(function(x) exp(x),function(x) exp(x),function(x) exp(x), function(x) exp(x)/(1+exp(x)))
-        if(identical(NA,fixedparameters)) fixedparameters <- rep(NA,4)
-        startvals <- rep(0,4)
-    }
-
-    # apply the ordering
-    yord <- y[ord]
-    locsord <- locs[ord,]
-    Xord <- X[ord,]
-
-    # get nearest neighbors and do grouping
-    cat("Finding Ordered Nearest Neighbors...")
-    NNarray <- findOrderedNNfast(locsord,numneighbors)
-    NNlist <- groupNN(NNarray)
-    cat("Done\n")
-
-    # fixedparameters allows us to fix some of the parameters. any parameter
-    # taking on NA in fixed parameters gets estimated. Those with specified
-    # values get fixed
-    covparms <- fixedparameters
-    notfixedinds <- which(is.na(fixedparameters))  # indices of parms to estimate
-
-    # block independent approximation to get starting values
-    nblocks <- round(n/50)
-    nside <- ceiling( sqrt(nblocks) )
-    blocklist <- getBlockList(locs,nside,nside)
-
-    # independent blocks negative loglikelihood with Least Squares betahat
-    betahat <- solve( crossprod(Xord), crossprod(Xord,yord) )
-    f0 <- function(x){
-        for(j in 1:length(notfixedinds)){
-            covparms[notfixedinds[j]] <- invlinkfun[[notfixedinds[j]]](x[j])
-        }
-        y0 <- y - X %*% betahat
-        covparms[1] <- crossprod( y0 )/n
-        ll <- mvnIndepBlocks(covparms,covfun,y0,locs,blocklist)
-        return(-ll)
-    }
-
-    # Vecchia's approximation
-    f1 <- function(x){
-        for(j in 1:length(notfixedinds)){
-            covparms[notfixedinds[j]] <- invlinkfun[[notfixedinds[j]]](x[j])
-        }
-        ll <- orderedGroupCompProfLik(covparms,covfun,yord,Xord,locsord,NNlist)
-        return(-ll$loglik)
-    }
-
-    # use nelder mead (which seems more stable) to move towards maximum
-    # of independent blocks likelihood approximation
-    cat("Getting Initial Parameter Values...")
-    result0 <- optim(startvals[notfixedinds],f0,method="Nelder-Mead",control=list(maxit=50,trace=0))
-    # use BFGS to get to the optimum once we are close
-    result0 <- optim(result0$par,f0,method="BFGS",control=list(maxit=100,trace=0))
-    cat("Done\n")
-    # use the maximum independent blocks likelihood estimates to start
-    # an optimization of Vecchia's likelihood
-    cat("Maximizing Approximate Likelihood...")
-    result1 <- optim(result0$par,f1,method="BFGS",control=list(maxit=20,trace=0))
-    cat("Done\n")
-    outparms <- fixedparameters
-    # transform back to original parameter domain with inverse link
-    cat("Collecting Results...")
-    for(j in 1:length(notfixedinds)){
-        outparms[notfixedinds[j]] <- invlinkfun[[notfixedinds[j]]](result1$par[j])
-    }
-    proflik <- orderedGroupCompProfLik(outparms,covfun,yord,Xord,locsord,NNlist)
-    outparms[1] <- proflik$sigmasq
-    names(outparms) <- c("variance","range","smoothness","signal2noise")
-
-    # get variance and mean parameters
-    returnobj <- list( covparms = outparms, betahat = as.vector(proflik$betahat),
-                       betacovmat = proflik$betacovmat, loglik = proflik$loglik )
-    cat("Done\n")
-    print( proc.time() - start_time )
-    return(returnobj)
-}
+# #' @export
+# fitmodel <- function(y, X, locs, covfun, numneighbors = 30, orderfun = "maxmindist",
+#                      fixedparameters = NA ){
+#
+#     start_time = proc.time()
+#     # need to add capability for including a linear mean
+#     n <- length(y)
+#
+#     # check to see if the number of data points matches the
+#     # number of spatial locations
+#     if( nrow(locs) != n ) stop("length of y not equal to number of locations")
+#
+#     # order the points according to orderfun argument
+#     # only maxmindist implemented. Others are easy too
+#     cat("Finding Max/Min Ordering...")
+#     if( orderfun == "maxmindist" ){
+#         ord <- orderMaxMinLocal(locs)
+#     } else {
+#         stop("Unrecognized ordering method specified in orderfun argument")
+#     }
+#     cat("Done \n")
+#
+#
+#     # define link functions for each parameter, i.e. take logs of
+#     # positive-valued parameters, logit of parameters in (0,1)
+#     if( identical(covfun,maternIsotropic, ignore.environment = TRUE) ){
+#         linkfun <- list( function(x) log(x), function(x) log(x), function(x) log(x), function(x) log(x)/log(1-x) )
+#         invlinkfun <- list(function(x) exp(x),function(x) exp(x),function(x) exp(x), function(x) exp(x)/(1+exp(x)))
+#         if(identical(NA,fixedparameters)) fixedparameters <- rep(NA,4)
+#         startvals <- rep(0,4)
+#     }
+#
+#     # apply the ordering
+#     yord <- y[ord]
+#     locsord <- locs[ord,]
+#     Xord <- X[ord,]
+#
+#     # get nearest neighbors and do grouping
+#     cat("Finding Ordered Nearest Neighbors...")
+#     NNarray <- findOrderedNNfast(locsord,numneighbors)
+#     NNlist <- groupNN(NNarray)
+#     cat("Done\n")
+#
+#     # fixedparameters allows us to fix some of the parameters. any parameter
+#     # taking on NA in fixed parameters gets estimated. Those with specified
+#     # values get fixed
+#     covparms <- fixedparameters
+#     notfixedinds <- which(is.na(fixedparameters))  # indices of parms to estimate
+#
+#     # block independent approximation to get starting values
+#     nblocks <- round(n/50)
+#     nside <- ceiling( sqrt(nblocks) )
+#     blocklist <- getBlockList(locs,nside,nside)
+#
+#     # independent blocks negative loglikelihood with Least Squares betahat
+#     betahat <- solve( crossprod(Xord), crossprod(Xord,yord) )
+#     f0 <- function(x){
+#         for(j in 1:length(notfixedinds)){
+#             covparms[notfixedinds[j]] <- invlinkfun[[notfixedinds[j]]](x[j])
+#         }
+#         y0 <- y - X %*% betahat
+#         covparms[1] <- crossprod( y0 )/n
+#         ll <- mvnIndepBlocks(covparms,covfun,y0,locs,blocklist)
+#         return(-ll)
+#     }
+#
+#     # Vecchia's approximation
+#     f1 <- function(x){
+#         for(j in 1:length(notfixedinds)){
+#             covparms[notfixedinds[j]] <- invlinkfun[[notfixedinds[j]]](x[j])
+#         }
+#         ll <- orderedGroupCompProfLik(covparms,covfun,yord,Xord,locsord,NNlist)
+#         return(-ll$loglik)
+#     }
+#
+#     # use nelder mead (which seems more stable) to move towards maximum
+#     # of independent blocks likelihood approximation
+#     cat("Getting Initial Parameter Values...")
+#     result0 <- optim(startvals[notfixedinds],f0,method="Nelder-Mead",control=list(maxit=50,trace=0))
+#     # use BFGS to get to the optimum once we are close
+#     result0 <- optim(result0$par,f0,method="BFGS",control=list(maxit=100,trace=0))
+#     cat("Done\n")
+#     # use the maximum independent blocks likelihood estimates to start
+#     # an optimization of Vecchia's likelihood
+#     cat("Maximizing Approximate Likelihood...")
+#     result1 <- optim(result0$par,f1,method="BFGS",control=list(maxit=20,trace=0))
+#     cat("Done\n")
+#     outparms <- fixedparameters
+#     # transform back to original parameter domain with inverse link
+#     cat("Collecting Results...")
+#     for(j in 1:length(notfixedinds)){
+#         outparms[notfixedinds[j]] <- invlinkfun[[notfixedinds[j]]](result1$par[j])
+#     }
+#     proflik <- orderedGroupCompProfLik(outparms,covfun,yord,Xord,locsord,NNlist)
+#     outparms[1] <- proflik$sigmasq
+#     names(outparms) <- c("variance","range","smoothness","signal2noise")
+#
+#     # get variance and mean parameters
+#     returnobj <- list( covparms = outparms, betahat = as.vector(proflik$betahat),
+#                        betacovmat = proflik$betacovmat, loglik = proflik$loglik )
+#     cat("Done\n")
+#     print( proc.time() - start_time )
+#     return(returnobj)
+# }
 
 
 # this doesn't work yet. I need to write a profile likelihood function
@@ -402,110 +410,110 @@ fitmodel <- function(y, X, locs, covfun, numneighbors = 30, orderfun = "maxmindi
 # wrapper function for model fitting
 # uses grouped profile likelihood, maxmindist ordering implemented,
 # right now, cannot fix variance parameter, always profiled out
-#' @export
-fitmodelpp <- function(y, X, locs, covfun, numneighbors = 30, orderfun = "maxmindist",
-                     fixedparameters = NA ){
-
-    start_time = proc.time()
-    # need to add capability for including a linear mean
-    n <- length(y)
-
-    # check to see if the number of data points matches the
-    # number of spatial locations
-    if( nrow(locs) != n ) stop("length of y not equal to number of locations")
-
-    # order the points according to orderfun argument
-    # only maxmindist implemented. Others are easy too
-    cat("Finding Max/Min Ordering...")
-    if( orderfun == "maxmindist" ){
-        ord <- orderMaxMinLocal(locs)
-    } else {
-        stop("Unrecognized ordering method specified in orderfun argument")
-    }
-    cat("Done \n")
-
-
-    # define link functions for each parameter, i.e. take logs of
-    # positive-valued parameters, logit of parameters in (0,1)
-    if( identical(covfun,maternIsotropic, ignore.environment = TRUE) ){
-        linkfun <- list( function(x) log(x), function(x) log(x), function(x) log(x), function(x) log(x)/log(1-x) )
-        invlinkfun <- list(function(x) exp(x),function(x) exp(x),function(x) exp(x), function(x) exp(x)/(1+exp(x)))
-        if(identical(NA,fixedparameters)) fixedparameters <- rep(NA,4)
-        startvals <- rep(0,4)
-    }
-
-    # apply the ordering
-    yord <- y[ord]
-    locsord <- locs[ord,]
-    Xord <- X[ord,]
-
-    # get nearest neighbors and do grouping
-    cat("Finding Ordered Nearest Neighbors...")
-    NNarray <- findOrderedNNfast(locsord,numneighbors)
-    #NNlist <- groupNN(NNarray)
-    cat("Done\n")
-
-    # fixedparameters allows us to fix some of the parameters. any parameter
-    # taking on NA in fixed parameters gets estimated. Those with specified
-    # values get fixed
-    covparms <- fixedparameters
-    notfixedinds <- which(is.na(fixedparameters))  # indices of parms to estimate
-
-    # block independent approximation to get starting values
-    nblocks <- round(n/50)
-    nside <- ceiling( sqrt(nblocks) )
-    blocklist <- getBlockList(locs,nside,nside)
-
-    # independent blocks negative loglikelihood with Least Squares betahat
-    betahat <- solve( crossprod(Xord), crossprod(Xord,yord) )
-    f0 <- function(x){
-        for(j in 1:length(notfixedinds)){
-            covparms[notfixedinds[j]] <- invlinkfun[[notfixedinds[j]]](x[j])
-        }
-        y0 <- y - X %*% betahat
-        covparms[1] <- crossprod( y0 )/n
-        ll <- mvnIndepBlocks(covparms,covfun,y0,locs,blocklist)
-        return(-ll)
-    }
-
-    # Vecchia's approximation
-    f1 <- function(x){
-        for(j in 1:length(notfixedinds)){
-            covparms[notfixedinds[j]] <- invlinkfun[[notfixedinds[j]]](x[j])
-        }
-        ll <- OrderedCompLik(covparms,covfun,yord,Xord,locsord,NNlist)
-        return(-ll$loglik)
-    }
-
-    # use nelder mead (which seems more stable) to move towards maximum
-    # of independent blocks likelihood approximation
-    cat("Getting Initial Parameter Values...")
-    result0 <- optim(startvals[notfixedinds],f0,method="Nelder-Mead",control=list(maxit=50,trace=0))
-    # use BFGS to get to the optimum once we are close
-    result0 <- optim(result0$par,f0,method="BFGS",control=list(maxit=100,trace=0))
-    cat("Done\n")
-    # use the maximum independent blocks likelihood estimates to start
-    # an optimization of Vecchia's likelihood
-    cat("Maximizing Approximate Likelihood...")
-    result1 <- optim(result0$par,f1,method="BFGS",control=list(maxit=20,trace=0))
-    cat("Done\n")
-    outparms <- fixedparameters
-    # transform back to original parameter domain with inverse link
-    cat("Collecting Results...")
-    for(j in 1:length(notfixedinds)){
-        outparms[notfixedinds[j]] <- invlinkfun[[notfixedinds[j]]](result1$par[j])
-    }
-    proflik <- orderedGroupCompProfLik(outparms,covfun,yord,Xord,locsord,NNlist)
-    outparms[1] <- proflik$sigmasq
-    names(outparms) <- c("variance","range","smoothness","signal2noise")
-
-    # get variance and mean parameters
-    returnobj <- list( covparms = outparms, betahat = as.vector(proflik$betahat),
-                       betacovmat = proflik$betacovmat, loglik = proflik$loglik )
-    cat("Done\n")
-    print( proc.time() - start_time )
-    return(returnobj)
-}
+# #' @export
+# fitmodelpp <- function(y, X, locs, covfun, numneighbors = 30, orderfun = "maxmindist",
+#                      fixedparameters = NA ){
+#
+#     start_time = proc.time()
+#     # need to add capability for including a linear mean
+#     n <- length(y)
+#
+#     # check to see if the number of data points matches the
+#     # number of spatial locations
+#     if( nrow(locs) != n ) stop("length of y not equal to number of locations")
+#
+#     # order the points according to orderfun argument
+#     # only maxmindist implemented. Others are easy too
+#     cat("Finding Max/Min Ordering...")
+#     if( orderfun == "maxmindist" ){
+#         ord <- orderMaxMinLocal(locs)
+#     } else {
+#         stop("Unrecognized ordering method specified in orderfun argument")
+#     }
+#     cat("Done \n")
+#
+#
+#     # define link functions for each parameter, i.e. take logs of
+#     # positive-valued parameters, logit of parameters in (0,1)
+#     if( identical(covfun,maternIsotropic, ignore.environment = TRUE) ){
+#         linkfun <- list( function(x) log(x), function(x) log(x), function(x) log(x), function(x) log(x)/log(1-x) )
+#         invlinkfun <- list(function(x) exp(x),function(x) exp(x),function(x) exp(x), function(x) exp(x)/(1+exp(x)))
+#         if(identical(NA,fixedparameters)) fixedparameters <- rep(NA,4)
+#         startvals <- rep(0,4)
+#     }
+#
+#     # apply the ordering
+#     yord <- y[ord]
+#     locsord <- locs[ord,]
+#     Xord <- X[ord,]
+#
+#     # get nearest neighbors and do grouping
+#     cat("Finding Ordered Nearest Neighbors...")
+#     NNarray <- findOrderedNNfast(locsord,numneighbors)
+#     #NNlist <- groupNN(NNarray)
+#     cat("Done\n")
+#
+#     # fixedparameters allows us to fix some of the parameters. any parameter
+#     # taking on NA in fixed parameters gets estimated. Those with specified
+#     # values get fixed
+#     covparms <- fixedparameters
+#     notfixedinds <- which(is.na(fixedparameters))  # indices of parms to estimate
+#
+#     # block independent approximation to get starting values
+#     nblocks <- round(n/50)
+#     nside <- ceiling( sqrt(nblocks) )
+#     blocklist <- getBlockList(locs,nside,nside)
+#
+#     # independent blocks negative loglikelihood with Least Squares betahat
+#     betahat <- solve( crossprod(Xord), crossprod(Xord,yord) )
+#     f0 <- function(x){
+#         for(j in 1:length(notfixedinds)){
+#             covparms[notfixedinds[j]] <- invlinkfun[[notfixedinds[j]]](x[j])
+#         }
+#         y0 <- y - X %*% betahat
+#         covparms[1] <- crossprod( y0 )/n
+#         ll <- mvnIndepBlocks(covparms,covfun,y0,locs,blocklist)
+#         return(-ll)
+#     }
+#
+#     # Vecchia's approximation
+#     f1 <- function(x){
+#         for(j in 1:length(notfixedinds)){
+#             covparms[notfixedinds[j]] <- invlinkfun[[notfixedinds[j]]](x[j])
+#         }
+#         ll <- OrderedCompLik(covparms,covfun,yord,Xord,locsord,NNlist)
+#         return(-ll$loglik)
+#     }
+#
+#     # use nelder mead (which seems more stable) to move towards maximum
+#     # of independent blocks likelihood approximation
+#     cat("Getting Initial Parameter Values...")
+#     result0 <- optim(startvals[notfixedinds],f0,method="Nelder-Mead",control=list(maxit=50,trace=0))
+#     # use BFGS to get to the optimum once we are close
+#     result0 <- optim(result0$par,f0,method="BFGS",control=list(maxit=100,trace=0))
+#     cat("Done\n")
+#     # use the maximum independent blocks likelihood estimates to start
+#     # an optimization of Vecchia's likelihood
+#     cat("Maximizing Approximate Likelihood...")
+#     result1 <- optim(result0$par,f1,method="BFGS",control=list(maxit=20,trace=0))
+#     cat("Done\n")
+#     outparms <- fixedparameters
+#     # transform back to original parameter domain with inverse link
+#     cat("Collecting Results...")
+#     for(j in 1:length(notfixedinds)){
+#         outparms[notfixedinds[j]] <- invlinkfun[[notfixedinds[j]]](result1$par[j])
+#     }
+#     proflik <- orderedGroupCompProfLik(outparms,covfun,yord,Xord,locsord,NNlist)
+#     outparms[1] <- proflik$sigmasq
+#     names(outparms) <- c("variance","range","smoothness","signal2noise")
+#
+#     # get variance and mean parameters
+#     returnobj <- list( covparms = outparms, betahat = as.vector(proflik$betahat),
+#                        betacovmat = proflik$betacovmat, loglik = proflik$loglik )
+#     cat("Done\n")
+#     print( proc.time() - start_time )
+#     return(returnobj)
+# }
 
 
 

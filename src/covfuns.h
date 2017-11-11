@@ -2,7 +2,7 @@
 #ifndef COVFUNS_H
 #define COVFUNS_H
 
-inline double covfun(double d, double *cparms){
+inline double Matern_from_dist(double d, double *cparms){
 
     // has special cases for 1/2 and 3/2
     if( d == 0.0 ){
@@ -19,7 +19,23 @@ inline double covfun(double d, double *cparms){
         }
     }
     return d;
- }
+}
+
+inline double Matern_from_locs( std::vector<double> loc1, std::vector<double> loc2, double *cparms){
+
+    int dim = loc1.size();
+    double d = 0.0;
+    int i;
+    for(i=0; i<dim; i++){
+        d += pow(loc1[i]-loc2[i], 2);
+    }
+    d = pow(d, 0.5);
+
+    d = Matern_from_dist(d,cparms);
+    return d;
+
+}
+
 
 #endif
 
