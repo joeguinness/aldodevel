@@ -13,7 +13,3 @@ OrderedGroupCompLik <- function(covparms, y, locs, NNlist) {
     .Call('_aldodevel_OrderedGroupCompLik', PACKAGE = 'aldodevel', covparms, y, locs, NNlist)
 }
 
-OrderedGroupCompLik2 <- function(covparms, y, locs, NNlist) {
-    .Call('_aldodevel_OrderedGroupCompLik2', PACKAGE = 'aldodevel', covparms, y, locs, NNlist)
-}
-

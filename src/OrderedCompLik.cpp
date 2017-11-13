@@ -23,41 +23,42 @@ NumericVector OrderedCompLik(NumericVector covparms, StringVector covfun_name,
 
     NumericVector ll(1);
     int n = y.length();
+    int dim = locs.ncol();
 
     // number of neighbors + 1
     int m = NNarray.ncol();
 
     double d;
     double ysub[m];
-    double locsub[m][2];
+    //vector< vector <double> > locsub[m][2];
+    std::vector<std::vector<double> > locsub(m, std::vector<double>(dim, 0));
+
 
     double Li[m][m];
 
     double g[m];
     double sig[m];
 
-    int dim = locs.ncol();
 
     vector<double> loc1(dim);
     vector<double> loc2(dim);
 
-    const auto covfun = Matern_from_dist;
+    //const auto covfun = Matern_from_dist;
 
 
     for(i=m; i<n+1; i++){
 
         // first, fill in ysub and locsub in reverse order
         for(j=m-1; j>=0; j--){
-            locsub[m-1-j][0] = locs( NNarray(i-1,j)-1, 0 );
-            locsub[m-1-j][1] = locs( NNarray(i-1,j)-1, 1 );
+            for(k=0;k<dim;k++){ locsub[m-1-j][k] = locs( NNarray(i-1,j)-1, k ); }
             ysub[m-1-j] = y[ NNarray(i-1,j)-1 ];
         }
 
 
         for(k=0;k<m;k++){ for(j=0;j<m;j++){ Li[k][j] = 0.0; }}
 
-        for(k=0;k<dim;k++){ loc1[k] = locsub[0][k]; }
-        Li[1-1][1-1] = pow( Matern_from_locs(loc1, loc1, cparms), -0.5 );
+        loc1 = locsub[0];
+        Li[1-1][1-1] = pow( Matern_from_dist(0, cparms), -0.5 );
 
         for(j=2; j<m+1; j++){  // j = row of Li
 
@@ -66,20 +67,21 @@ NumericVector OrderedCompLik(NumericVector covparms, StringVector covfun_name,
                 g[k-1] = 0.0;
             }
 
-            for(el=0;el<dim;el++){ loc1[el] = locsub[j-1][el]; }
+            //loc1 = locsub[j-1];
 
             // get first j-1 entries of jth row of L (not Linverse!)
             for(k=1; k<j; k++){
 
+                //loc2 = locsub[k-1];
+                for(el=0;el<dim;el++){ loc2[el] = locsub[k-1][el]; }
 
-                for(el=0;el<dim;el++){
-                    loc2[el] = locsub[k-1][el];
-                }
+                d = 0.0;
+                for(el=0;el<dim;el++){ d += pow(locsub[k-1][el]-locsub[j-1][el],2); }
+                d = pow( d, 0.5 );
 
-                d = pow( pow(locsub[k-1][0] - locsub[j-1][0],2) +
-                          pow(locsub[k-1][1] - locsub[j-1][1],2), 0.5 );
-                sig[k-1] = covfun(d,cparms);
+                sig[k-1] = Matern_from_dist(d,cparms);
                 //sig[k-1] = Matern_from_locs(loc1,loc2,cparms);
+
                 g[k-1] = 0.0;
                 for(el=1; el<k+1; el++){
                     g[k-1] += Li[k-1][el-1]*sig[el-1];
@@ -89,7 +91,7 @@ NumericVector OrderedCompLik(NumericVector covparms, StringVector covfun_name,
             // get diagonal entry
             d = 0.0;
             for( k=1;k<j;k++ ){ d += g[k-1]*g[k-1]; }
-            Li[j-1][j-1] = pow( covfun(0,cparms) - d, -0.5 );
+            Li[j-1][j-1] = pow( Matern_from_dist(0,cparms) - d, -0.5 );
 
             // now get first j-1 entries jth row of Linverse
             for(k=1; k<j; k++){

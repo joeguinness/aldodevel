@@ -15,7 +15,7 @@ inline double Matern_from_dist(double d, double *cparms){
         } else {
             double normcon = cparms[0]/(pow(2.0,cparms[2]-1)*Rf_gammafn(cparms[2]));
             d = normcon*pow( d/cparms[1], cparms[2] )*
-            Rf_bessel_k(d/cparms[1],cparms[2],1.0);
+            Rf_bessel_k(d/cparms[1],cparms[2],1.0)*cparms[3];
         }
     }
     return d;
@@ -27,12 +27,13 @@ inline double Matern_from_locs( std::vector<double> loc1, std::vector<double> lo
     double d = 0.0;
     int i;
     for(i=0; i<dim; i++){
-        d += pow(loc1[i]-loc2[i], 2);
+        d += pow( loc1[i] - loc2[i], 2);
     }
     d = pow(d, 0.5);
 
     d = Matern_from_dist(d,cparms);
     return d;
+
 
 }
 

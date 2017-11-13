@@ -5,11 +5,7 @@
 
 
 # a short vignette demonstrating how to use the functions
-#library(aldodevel)
-rm(list=ls())
-# load all package functions
-devtools::load_all(".")
-
+library("aldodevel")
 
 # grid size for data locations
 gsize <- 100
