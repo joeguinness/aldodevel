@@ -18,7 +18,7 @@ Rcpp::NumericMatrix MaternFun( Rcpp::NumericMatrix& distmat, Rcpp::NumericVector
     for (j1 = 0; j1 < d1; j1++){
         for (j2 = 0; j2 < d2; j2++){
             if ( distmat(j1,j2) == 0 ){
-                covmat(j1,j2) = covparms(0);
+                covmat(j1,j2) = covparms(0)*(1+covparms(3));
             } else {
                 scaledist = distmat(j1,j2)/covparms(1);
                 covmat(j1,j2) = normcon*pow( scaledist, covparms(2) )*
