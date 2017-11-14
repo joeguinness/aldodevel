@@ -19,7 +19,7 @@ locs <- as.matrix(expand.grid(x1,x2))
 
 # covariance function and parameters
 covfun <- maternIsotropic
-covparms <- c(variance = 4, range = 0.1, smoothness = 1/2, sig2noise = 1)
+covparms <- c(variance = 4, range = 0.1, smoothness = 0.6, nugget = 0)
 
 # simulateData does full covariance calculation. beware!
 y <- rnorm(n)
