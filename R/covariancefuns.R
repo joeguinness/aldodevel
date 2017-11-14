@@ -32,11 +32,12 @@ maternFun <- function(distmat, covparms, returnD1 = FALSE, eee = 1e-8 ){
         besspart <- besselK(scaledist,covparms[3])
         maternpart  <-  1/normcon*(scaledist)^covparms[3]*besspart
     }
-    covmat[distmat != 0] <- covparms[1]*covparms[4]*maternpart[distmat!=0]
-    covmat[distmat == 0] <- covparms[1]
+    covmat[distmat != 0] <- covparms[1]*maternpart[distmat!=0]
+    covmat[distmat == 0] <- covparms[1]*(1 + covparms[4])
 
 
     # if specified, return vector of first derivatives
+    # I think this is wrong given reparameterization of nugget
     if(returnD1){
 
         if(!exists("besspart")) besspart <- besselK(scaledist,covparms[3])
