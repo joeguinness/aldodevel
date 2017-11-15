@@ -5,7 +5,35 @@
 # simply operate on them in the canonical ordering (i.e. there is no
 # need to reorder them again after they have been ordered and input
 # into these functions)
+#' @export
+proflik <- function(y,X,subparms,covfun,locs,NNarray,returnparms = FALSE){
 
+    n <- length(y)
+    covparms1 <- c(1,subparms)
+    LinvEntries <- getLinvEntries(covparms1,"maternIsotropic",locs,NNarray)
+    B <- array(NA, dim(X))
+    for(j in 1:ncol(X)){
+        B[,j] <- LinvMultFromEntries(LinvEntries,X[,j],NNarray)
+    }
+    infomat <- crossprod(B)
+    z <- LinvMultFromEntries(LinvEntries,y,NNarray)
+    beta <- solve( infomat, crossprod(B,z) )
+    resids <- y - X %*% beta
+    z_resids <- LinvMultFromEntries(LinvEntries,resids,NNarray)
+    sigmasq <- c( crossprod(z_resids)/n )
+
+    logdet <- -2*sum(log(LinvEntries[,1])) + n*log(sigmasq)
+    quadform <- n
+    profloglik <- -1/2*( n*log(2*pi) + logdet + quadform )
+    if( !returnparms ){
+        return(profloglik)
+    }
+    if( returnparms ){
+        betacovmat <- sigmasq*solve(infomat)
+        return(list(loglik = profloglik, covparms = c(sigmasq,subparms),
+                    beta = beta, betacovmat = betacovmat))
+    }
+}
 
 # ordered composite likelihood. This is Vecchia's approximation
 # NNarray is an array whose first column is 1 through n, representing
