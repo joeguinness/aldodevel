@@ -1,14 +1,12 @@
 
 
-#install.packages("/Users/guinness/Dropbox/research/aldodevel_0.1.0.tar.gz",
-#                 repos = NULL, type = "source" )
-
+#devtools::install_github("joeguinness/aldodevel")
 
 # a short vignette demonstrating how to use the functions
 library("aldodevel")
 
 # grid size for data locations
-gsize <- 100
+gsize <- 40
 nvec <- c(gsize,gsize)
 n <- prod(nvec)
 
