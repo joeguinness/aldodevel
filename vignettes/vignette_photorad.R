@@ -1,6 +1,8 @@
 
+#devtools::install_github("joeguinness/aldodevel")
 
-# fit covariance parameters to the
+
+# fit covariance and mean parameters to the
 # photosynthetically available (active) radiation data
 library("aldodevel")
 
@@ -24,6 +26,9 @@ locs <- as.matrix( expand.grid( 1:n1, 1:n2 ) )[observed,]
 parvec <- pardata[ observed ]
 n <- length(parvec)
 n # possible to do exact max lik, but very slow
+X <- cbind( rep(1,n), locs )
+
+
 
 # get an ordering
 ord <- spacefill_kdtree(locs)
@@ -32,6 +37,7 @@ ord <- spacefill_kdtree(locs)
 # reorder data
 locsord <- locs[ord,]
 parord <- parvec[ord]
+Xord <- X[ord,,drop=FALSE]
 
 # get ordered nearest neighbors
 m <- 10
@@ -49,34 +55,29 @@ for( k in c(100,500,5000) ){
 }
 
 
-# maximize a likelihood
 
-# function to minimize
+
+# maximize a profile likelihood
 funtomin <- function( logparms ){
-
     parms <- exp(logparms)
-    parms[4] <- exp(logparms[4])/( 1 + exp(logparms[4]) )
-    loglik <- OrderedCompLik(parms, "maternIsotropic", parord - mean(parord), locsord, NNarray )
-    #loglik <- OrderedGroupCompLik(parms, parord - mean(parord), locsord, NNlist )
-    return(-loglik)
-
+    pl <- proflik(parord,Xord,parms,covfun,locsord,NNarray)
+    return(-pl)
 }
 
 # use optim to get minimim
 # control = list(trace=5) tells us to print out info
-startvals <- rep(0,4)
+startvals <- rep(0,3)
 # startvals <- result$par
 t1 <- proc.time()[3]
-result <- optim( startvals, funtomin, control = list(trace=5, maxit=1000) )
+result <- optim( par = startvals, fn = funtomin, control = list(trace=5) )
 totaltime <- proc.time()[3] - t1
 
-result
 
-# get estimated parameters
-logparms <- result$par
-parms <- exp(logparms)
-parms[4] <- exp(logparms[4])/( 1 + exp(logparms[4]) )
-parms
+# another call to proflike with returnparms = TRUE
+# in order to get betahat and sigmasq
+subparms <- exp(result$par)
+fitinfo <- proflik(parord,Xord,subparms,covfun,locsord,NNarray,returnparms = TRUE)
+fitinfo
 
 # how long did it take
 totaltime
