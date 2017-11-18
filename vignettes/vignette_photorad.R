@@ -86,3 +86,14 @@ totaltime
 totaltime/result$counts[1]
 
 
+# function to do all of this stuff
+t1 <- proc.time()
+fitinfo <- fitmodel(parvec,locs,X)
+t2 <- proc.time()
+t2-t1
+fitinfo
+
+
+
+
+
