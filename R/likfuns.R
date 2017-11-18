@@ -35,6 +35,54 @@ proflik <- function(y,X,subparms,covfun,locs,NNarray,returnparms = FALSE){
     }
 }
 
+# function to fit isotropic matern model
+fitmodel <- function(y,locs,X){
+
+    covfun <- maternIsotropic
+
+    # get ordering
+    cat("Getting Ordering...")
+    n <- length(y)
+    ord <- spacefill_kdtree(locs)
+    cat("done\n")
+
+    # reorder data
+    locsord <- locs[ord,]
+    yord <- y[ord]
+    Xord <- X[ord,,drop=FALSE]
+
+    # get ordered nearest neighbors
+    mvec <- c(5,10,30)
+    funtomin <- function( logparms ){
+        parms <- exp(logparms)
+        pl <- proflik(yord,Xord,parms,covfun,locsord,NNarray)
+        return(-pl)
+    }
+
+
+    startparms <- c(0.1*median(fields::rdist(locsord[1:min(n,100),])),1,0.1)
+    for(j in 1:length(mvec)){
+        cat(paste0("Fitting with ",mvec[j]," neighbors..."))
+        m <- mvec[j]
+        NNarray <- findOrderedNN_kdtree( locsord, m )
+        #NNlist <- groupNN3(NNarray)
+        result <- optim( par = log(startparms), fn = funtomin, control = list(trace=0) )
+        cat("done \n")
+        startparms <- exp(result$par)
+        fitinfo <- proflik(yord,Xord,startparms,covfun,locsord,NNarray,returnparms = TRUE)
+        cat(paste0("parms: variance = ",round(fitinfo$covparms[1],2),
+                   ", range = ",round(fitinfo$covparms[2],2),
+                   ", smoothness = ",round(fitinfo$covparms[3],2),
+                   ", nugget = ",round(fitinfo$covparms[4],2)," \n" ))
+    }
+
+    parms <- exp(result$par)
+    fitinfo <- proflik(yord,Xord,parms,covfun,locsord,NNarray,returnparms=TRUE)
+    return(fitinfo)
+}
+
+
+
 # ordered composite likelihood. This is Vecchia's approximation
 # NNarray is an array whose first column is 1 through n, representing
 # indices for the observations. The other columns give the indices of
