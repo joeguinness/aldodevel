@@ -26,7 +26,7 @@ double covfun4(double d, double *cparms){
     return d;
 }
 
-// this does the transformation L^{-1}y
+// this does the transformation L y
 // [[Rcpp::export]]
 NumericVector unwhiten3d(NumericVector covparms, NumericVector z,
                        NumericMatrix locs, IntegerMatrix NNarray) {
