@@ -46,7 +46,7 @@ fitmodel <- function(y,locs,X){
     ord <- spacefill_kdtree(locs)
     cat("done\n")
 
-    # reorder data
+    # reorder data <- <-
     locsord <- locs[ord,]
     yord <- y[ord]
     Xord <- X[ord,,drop=FALSE]
