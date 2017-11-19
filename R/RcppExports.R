@@ -9,6 +9,10 @@ LinvMultFromEntries <- function(LinvEntries, z, NNarray) {
     .Call('_aldodevel_LinvMultFromEntries', PACKAGE = 'aldodevel', LinvEntries, z, NNarray)
 }
 
+LMultFromEntries <- function(LinvEntries, z, NNarray) {
+    .Call('_aldodevel_LMultFromEntries', PACKAGE = 'aldodevel', LinvEntries, z, NNarray)
+}
+
 MaternFun <- function(distmat, covparms) {
     .Call('_aldodevel_MaternFun', PACKAGE = 'aldodevel', distmat, covparms)
 }

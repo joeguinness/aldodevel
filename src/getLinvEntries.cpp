@@ -146,3 +146,39 @@ NumericVector LinvMultFromEntries(NumericMatrix LinvEntries, NumericVector z,
     return x;
 }
 
+
+
+// [[Rcpp::export]]
+NumericVector LMultFromEntries(NumericMatrix LinvEntries, NumericVector z,
+                                  IntegerMatrix NNarray) {
+
+    // return x = L z
+    // by solving (L^{-1})x = z
+    int i;
+    int j;
+    int B;
+
+    int n = z.length();
+    NumericVector x(n);
+
+    // number of neighbors + 1
+    int m = NNarray.ncol();
+
+    // get entry 0
+    x(0) = z(0)/LinvEntries(0,0);
+
+    // get entries 1 through n-1
+    for(i=1; i<n; i++){
+        B = min(i,m);
+        x(i) = z(i);
+        for(j=1; j<B; j++){
+            x(i) -= LinvEntries(i,j)*x( NNarray(i,j) - 1 );
+        }
+        x(i) = x(i)/LinvEntries(i,0);
+    }
+
+    return x;
+}
+
+
+

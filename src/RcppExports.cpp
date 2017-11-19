@@ -32,6 +32,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// LMultFromEntries
+NumericVector LMultFromEntries(NumericMatrix LinvEntries, NumericVector z, IntegerMatrix NNarray);
+RcppExport SEXP _aldodevel_LMultFromEntries(SEXP LinvEntriesSEXP, SEXP zSEXP, SEXP NNarraySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type LinvEntries(LinvEntriesSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type z(zSEXP);
+    Rcpp::traits::input_parameter< IntegerMatrix >::type NNarray(NNarraySEXP);
+    rcpp_result_gen = Rcpp::wrap(LMultFromEntries(LinvEntries, z, NNarray));
+    return rcpp_result_gen;
+END_RCPP
+}
 // MaternFun
 Rcpp::NumericMatrix MaternFun(Rcpp::NumericMatrix& distmat, Rcpp::NumericVector covparms);
 RcppExport SEXP _aldodevel_MaternFun(SEXP distmatSEXP, SEXP covparmsSEXP) {
@@ -77,6 +90,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_aldodevel_getLinvEntries", (DL_FUNC) &_aldodevel_getLinvEntries, 4},
     {"_aldodevel_LinvMultFromEntries", (DL_FUNC) &_aldodevel_LinvMultFromEntries, 3},
+    {"_aldodevel_LMultFromEntries", (DL_FUNC) &_aldodevel_LMultFromEntries, 3},
     {"_aldodevel_MaternFun", (DL_FUNC) &_aldodevel_MaternFun, 2},
     {"_aldodevel_OrderedCompLik", (DL_FUNC) &_aldodevel_OrderedCompLik, 5},
     {"_aldodevel_OrderedGroupCompLik", (DL_FUNC) &_aldodevel_OrderedGroupCompLik, 4},
