@@ -108,8 +108,13 @@ NumericVector OrderedGroupCompLik(NumericVector covparms, NumericVector y,
 
             // get first j-1 entries of jth row of L (not Linverse!)
             for(k=1; k<j; k++){
-                d = pow( pow(locsub[k-1][0] - locsub[j-1][0],2) +
-                    pow(locsub[k-1][1] - locsub[j-1][1],2), 0.5 );
+                d = 0.0;
+                for(el=0; el< dim; el++){
+                    d+= pow( locsub[k-1][el] - locsub[j-1][el], 2 );
+                }
+                d = pow( d, 0.5 );
+                //d = pow( pow(locsub[k-1][0] - locsub[j-1][0],2) +
+                //    pow(locsub[k-1][1] - locsub[j-1][1],2), 0.5 );
                 sig[k-1] = Matern_from_dist(d,cparms);
                 g[k-1] = 0.0;
                 for(el=1; el<k+1; el++){
