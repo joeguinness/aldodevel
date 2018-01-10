@@ -18,7 +18,8 @@ NumericMatrix getLinvEntries(NumericVector covparms, StringVector covfun_name,
     int k;
     int el;
     int B;
-    double cparms[4] = {covparms[0], covparms[1], covparms[2], covparms[3]};
+    double cparms[3] = {covparms[0], covparms[1], covparms[2] };
+    double nugget = covparms[0]*covparms[3];
 
     int n = locs.nrow();
     int dim = locs.ncol();
@@ -40,7 +41,8 @@ NumericMatrix getLinvEntries(NumericVector covparms, StringVector covfun_name,
     // should really do i=m separately. Right now, I need to make
     // sure that the (m+1)th row of NNarray is
     // m+1,m,m-1,...,1
-    LinvEntries(0,0) = pow( Matern_from_dist(0.0, cparms), -0.5 );
+    for(k=0;k<dim;k++){ locsub[0][k] = locs(0,k); }
+    LinvEntries(0,0) = pow( MaternIsotropic(&locsub[0], &locsub[0], cparms) + nugget, -0.5 );
 
     for(i=2; i<n+1; i++){
 
@@ -58,7 +60,7 @@ NumericMatrix getLinvEntries(NumericVector covparms, StringVector covfun_name,
         for(k=0;k<m;k++){ for(j=0;j<m;j++){ Li[k][j] = 0.0; }}
 
         // first row has just a single nonzero entry
-        Li[1-1][1-1] = pow( Matern_from_dist(0.0, cparms), -0.5 );
+        Li[1-1][1-1] = pow( MaternIsotropic(&locsub[0], &locsub[0], cparms) + nugget, -0.5 );
 
         for(j=2; j<B+1; j++){  // j = row of Li
 
@@ -71,12 +73,14 @@ NumericMatrix getLinvEntries(NumericVector covparms, StringVector covfun_name,
             for(k=1; k<j; k++){
 
                 // get the distance
-                d = 0.0;
-                for(el=0;el<dim;el++){ d += pow(locsub[k-1][el]-locsub[j-1][el],2); }
-                d = pow( d, 0.5 );
+                //d = 0.0;
+                //for(el=0;el<dim;el++){ d += pow(locsub[k-1][el]-locsub[j-1][el],2); }
+                //d = pow( d, 0.5 );
 
                 // get the covariance
-                sig[k-1] = Matern_from_dist(d,cparms);
+                //sig[k-1] = Matern_from_dist(d,cparms);
+                sig[k-1] = MaternIsotropic(&locsub[k-1], &locsub[j-1], cparms);
+
 
                 // solve for g[k-1]
                 g[k-1] = 0.0;
@@ -89,7 +93,7 @@ NumericMatrix getLinvEntries(NumericVector covparms, StringVector covfun_name,
             // get diagonal entry
             d = 0.0;
             for( k=1;k<j;k++ ){ d += g[k-1]*g[k-1]; }
-            Li[j-1][j-1] = pow( Matern_from_dist(0.0,cparms) - d, -0.5 );
+            Li[j-1][j-1] = pow( MaternIsotropic(&locsub[j-1],&locsub[j-1],cparms) + nugget - d, -0.5 );
 
             // now get first j-1 entries jth row of Linverse
             for(k=1; k<j; k++){

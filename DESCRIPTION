@@ -10,7 +10,6 @@ LazyData: TRUE
 Imports:
     Rcpp (>= 0.12.4),
     fields,
-    matrixStats,
     FNN
-LinkingTo: Rcpp
+LinkingTo: Rcpp, FNN
 RoxygenNote: 6.0.1

@@ -1,11 +1,11 @@
 
 
-#install.packages("/Users/guinness/Dropbox/research/aldodevel_0.1.0.tar.gz",
-#                 repos = NULL, type = "source" )
+#install.packages("/Users/guinness/Dropbox/research/aldodevel_0.1.0.tar.gz",repos = NULL, type = "source" )
 
 
 # a short vignette demonstrating how to use the functions
-library("aldodevel")
+#library("aldodevel")
+
 
 # grid size for data locations
 gsize <- 100
@@ -18,8 +18,8 @@ x2 <- (1:nvec[2])/nvec[2]
 locs <- as.matrix(expand.grid(x1,x2))
 
 # covariance function and parameters
-covfun <- maternIsotropic
-covparms <- c(variance = 4, range = 0.1, smoothness = 0.6, nugget = 0)
+# covfun <- maternIsotropic
+covparms <- c(variance = 4, range = 0.1, smoothness = 1/2, nugget = 0)
 
 # simulateData does full covariance calculation. beware!
 y <- rnorm(n)
@@ -32,21 +32,35 @@ locsord <- locs[ord,]
 yord <- y[ord]
 
 # find the ordered m nearest neighbors
-m <- 20
+m <- 30
 NNarray <- findOrderedNN_kdtree(locsord,m)
 
 # automatically group the observations
-NNlist <- groupNN3(NNarray)
+NNlist <- groupNN(NNarray)
 # NNlist[1:10]  # list elements are subsets of rows of NNarray
 
 # compute the ungrouped and grouped likelihoods
-system.time(  ll_ungrouped <-
-    OrderedCompLik(covparms,"maternIsotropic",yord,locsord,NNarray)      )
-system.time(  ll_grouped   <-
-    OrderedGroupCompLik(covparms,yord,locsord,NNlist)  )
+t1 <- proc.time()[3]
+ll_ungrouped <- vecchiaLik(covparms,"maternIsotropic",yord,locsord,NNarray)
+t2 <- proc.time()[3]
+ll_ungrouped_chol <- vecchiaLik_function(covparms,"maternIsotropic",yord,locsord,NNarray)
+t3 <- proc.time()[3]
+ll_ungrouped - ll_ungrouped_chol
+t2-t1
+t3-t2
+# > ll_ungrouped
+# [1] -21133.47
 
-# double check answers with slower R implementation
-ll_ungrouped - orderedCompLik(covparms, covfun,yord,locsord,NNarray )
-ll_grouped - orderedGroupCompLik(covparms, covfun,yord,locsord,NNlist )
+
+t4 <- proc.time()[3]
+ll_grouped <- vecchiaLik_grouped_function(covparms,yord,locsord,NNlist)
+t5 <- proc.time()[3]
+ll_grouped_chol <- vecchiaLik_grouped(covparms,yord,locsord,NNlist)
+t6 <- proc.time()[3]
+ll_grouped - ll_grouped_chol
+t5-t4
+t6-t5
+
+
 
 

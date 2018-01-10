@@ -27,7 +27,7 @@ maternFun <- function(distmat, covparms, returnD1 = FALSE, eee = 1e-8 ){
     # special cases for nu = 1/2, 1, and 3/2
     if( covparms[3] == 1/2 ){ maternpart <- exp(-scaledist) }
     else if( covparms[3] == 3/2 ){ maternpart <- (1 + scaledist)*exp(-scaledist) }
-    else if( covparms[3] == 1   ){ maternpart <- MaternFun(distmat,c(1,covparms[2:3])) }
+    #else if( covparms[3] == 1   ){ maternpart <- MaternFun(distmat,c(1,covparms[2:3])) }
     else {
         besspart <- besselK(scaledist,covparms[3])
         maternpart  <-  1/normcon*(scaledist)^covparms[3]*besspart
@@ -69,14 +69,14 @@ maternFun <- function(distmat, covparms, returnD1 = FALSE, eee = 1e-8 ){
 
 
 #' @export
-#' @importFrom fields rdist
+# #' @importFrom fields rdist
 maternIsotropic <- function(locs,covparms,returnD1=FALSE){
 
     # use maternFun to compute isotropic matern covariance
     # locs are locations in a Euclidean space.
-    distmat <- rdist(locs)
+    distmat <- fields::rdist(locs)
     #covmat <- maternFun(distmat,covparms,returnD1)
-    covmat <- MaternFun(distmat,covparms)
+    covmat <- maternFun(distmat,covparms)
 
 }
 

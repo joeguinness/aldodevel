@@ -58,7 +58,7 @@ NumericVector OrderedCompLik(NumericVector covparms, StringVector covfun_name,
         for(k=0;k<m;k++){ for(j=0;j<m;j++){ Li[k][j] = 0.0; }}
 
         loc1 = locsub[0];
-        Li[1-1][1-1] = pow( Matern_from_dist(0, cparms), -0.5 );
+        Li[1-1][1-1] = pow( MaternFunction(0, cparms), -0.5 );
 
         for(j=2; j<m+1; j++){  // j = row of Li
 
@@ -79,7 +79,7 @@ NumericVector OrderedCompLik(NumericVector covparms, StringVector covfun_name,
                 for(el=0;el<dim;el++){ d += pow(locsub[k-1][el]-locsub[j-1][el],2); }
                 d = pow( d, 0.5 );
 
-                sig[k-1] = Matern_from_dist(d,cparms);
+                sig[k-1] = MaternFunction(d,cparms);
                 //sig[k-1] = Matern_from_locs(loc1,loc2,cparms);
 
                 g[k-1] = 0.0;
@@ -91,7 +91,7 @@ NumericVector OrderedCompLik(NumericVector covparms, StringVector covfun_name,
             // get diagonal entry
             d = 0.0;
             for( k=1;k<j;k++ ){ d += g[k-1]*g[k-1]; }
-            Li[j-1][j-1] = pow( Matern_from_dist(0,cparms) - d, -0.5 );
+            Li[j-1][j-1] = pow( MaternFunction(0,cparms) - d, -0.5 );
 
             // now get first j-1 entries jth row of Linverse
             for(k=1; k<j; k++){

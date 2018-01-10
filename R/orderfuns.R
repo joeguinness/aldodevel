@@ -169,29 +169,22 @@ spacefill_kdtree <- function(locs, m = 50){
 
     # get number of locs
     n <- nrow(locs)
-
     # m is number of neighbors to search over
-
     # get the past and future nearest neighbors
     NNall <- FNN::get.knn( locs, k = m )$nn.index
-
     # pick a random ordering
     ord <- sample(n)
     invord <- order(ord)
-
     # loop over the first n/4 locations
     # move an index to the end if it is a
     # near neighbor of a previous location
     nmoved <- 0
     for(j in 1:round(n/4)){
-
-
         nneigh <- max(1, round( m*(1 - 4*j/n) ) )
         neighbors <- NNall[ord[j],1:nneigh]
         neighbors <- neighbors[ invord[neighbors] > j ]
         nneigh <- length(neighbors)
         newindices <- round( (n-j)*(nneigh:1)/nneigh )
-
 
         if(length(neighbors)>0){
             for(k in 1:nneigh){
@@ -207,10 +200,7 @@ spacefill_kdtree <- function(locs, m = 50){
         }
     }
     return(ord)
-
 }
-
-
 
 
 

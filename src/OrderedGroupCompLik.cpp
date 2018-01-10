@@ -98,7 +98,7 @@ NumericVector OrderedGroupCompLik(NumericVector covparms, NumericVector y,
         for(k=0;k<blocksize;k++){ for(j=0;j<blocksize;j++){ Li[k][j] = 0.0; }}
 
         // get 1,1 entry
-        Li[0][0] = pow( Matern_from_dist(0, cparms), -0.5 );
+        Li[0][0] = pow( MaternFunction(0, cparms), -0.5 );
 
         // get the rest of the entries
         for(j=2; j<blocksize+1; j++){  // j = row of Li
@@ -115,7 +115,7 @@ NumericVector OrderedGroupCompLik(NumericVector covparms, NumericVector y,
                 d = pow( d, 0.5 );
                 //d = pow( pow(locsub[k-1][0] - locsub[j-1][0],2) +
                 //    pow(locsub[k-1][1] - locsub[j-1][1],2), 0.5 );
-                sig[k-1] = Matern_from_dist(d,cparms);
+                sig[k-1] = MaternFunction(d,cparms);
                 g[k-1] = 0.0;
                 for(el=1; el<k+1; el++){
                     g[k-1] += Li[k-1][el-1]*sig[el-1];
@@ -125,7 +125,7 @@ NumericVector OrderedGroupCompLik(NumericVector covparms, NumericVector y,
             // get diagonal entry
             d = 0.0;
             for( k=1;k<j;k++ ){ d += g[k-1]*g[k-1]; }
-            Li[j-1][j-1] = pow( Matern_from_dist(0,cparms) - d, -0.5 );
+            Li[j-1][j-1] = pow( MaternFunction(0,cparms) - d, -0.5 );
 
             // now get first j-1 entries jth row of Linverse
             for(k=1; k<j; k++){
