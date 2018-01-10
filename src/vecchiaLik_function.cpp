@@ -45,21 +45,23 @@ NumericVector vecchiaLik_function(NumericVector covparms, StringVector covfun_na
     std::vector<double> g (m,0);
     std::vector<double> sig (m,0);
 
+
     // the user inputs a covariance function name as a string (covfun_name)
     // then based on the string, we assign a pointer to an allowable
     // c++ covariance function
     double (*p_covfun)(const std::vector<double>* loc1, const std::vector<double>* loc2, double* cparms);
-    p_covfun = &MaternIsotropic;
+    // convert StringVector to std::string for .compare() below
+    std::string covfun_name_string;
+    covfun_name_string = covfun_name[0];
 
-    /*
-    if( strncmp(covfun_name,"maternIsotropic") )
+    if( covfun_name_string.compare("maternIsotropic") == 0 )
     {
         p_covfun = &MaternIsotropic;
     } else {
         cout << "Unrecognized Covariance Function Name \n";
         assert(0);
     }
-    */
+
 
     for(i=m; i<n+1; i++){
 

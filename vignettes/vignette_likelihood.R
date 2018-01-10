@@ -4,8 +4,8 @@
 
 
 # a short vignette demonstrating how to use the functions
-library("aldodevel")
-
+#library("aldodevel")
+devtools::load_all(".")
 
 # grid size for data locations
 gsize <- 100
