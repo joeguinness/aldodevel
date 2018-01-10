@@ -4,7 +4,7 @@
 
 
 # a short vignette demonstrating how to use the functions
-#library("aldodevel")
+library("aldodevel")
 
 
 # grid size for data locations
@@ -25,7 +25,7 @@ covparms <- c(variance = 4, range = 0.1, smoothness = 1/2, nugget = 0)
 y <- rnorm(n)
 
 # generate an ordering
-ord <- sample(n)
+ord <- order_maxmin(locs)
 
 # define ordered locations and observations
 locsord <- locs[ord,]
@@ -52,8 +52,9 @@ t3-t2
 # [1] -21133.47
 
 
+# figure out why _function is slower
 t4 <- proc.time()[3]
-ll_grouped <- vecchiaLik_grouped_function(covparms,yord,locsord,NNlist)
+ll_grouped <- vecchiaLik_grouped_function(covparms,"maternIsotropic",yord,locsord,NNlist)
 t5 <- proc.time()[3]
 ll_grouped_chol <- vecchiaLik_grouped(covparms,yord,locsord,NNlist)
 t6 <- proc.time()[3]

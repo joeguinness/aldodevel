@@ -102,16 +102,17 @@ BEGIN_RCPP
 END_RCPP
 }
 // vecchiaLik_grouped_function
-NumericVector vecchiaLik_grouped_function(NumericVector covparms, NumericVector y, NumericMatrix locs, List NNlist);
-RcppExport SEXP _aldodevel_vecchiaLik_grouped_function(SEXP covparmsSEXP, SEXP ySEXP, SEXP locsSEXP, SEXP NNlistSEXP) {
+NumericVector vecchiaLik_grouped_function(NumericVector covparms, StringVector covfun_name, NumericVector y, NumericMatrix locs, List NNlist);
+RcppExport SEXP _aldodevel_vecchiaLik_grouped_function(SEXP covparmsSEXP, SEXP covfun_nameSEXP, SEXP ySEXP, SEXP locsSEXP, SEXP NNlistSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type covparms(covparmsSEXP);
+    Rcpp::traits::input_parameter< StringVector >::type covfun_name(covfun_nameSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type locs(locsSEXP);
     Rcpp::traits::input_parameter< List >::type NNlist(NNlistSEXP);
-    rcpp_result_gen = Rcpp::wrap(vecchiaLik_grouped_function(covparms, y, locs, NNlist));
+    rcpp_result_gen = Rcpp::wrap(vecchiaLik_grouped_function(covparms, covfun_name, y, locs, NNlist));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -153,7 +154,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_aldodevel_OrderedCompLik", (DL_FUNC) &_aldodevel_OrderedCompLik, 5},
     {"_aldodevel_OrderedGroupCompLik", (DL_FUNC) &_aldodevel_OrderedGroupCompLik, 4},
     {"_aldodevel_vecchiaLik_function", (DL_FUNC) &_aldodevel_vecchiaLik_function, 5},
-    {"_aldodevel_vecchiaLik_grouped_function", (DL_FUNC) &_aldodevel_vecchiaLik_grouped_function, 4},
+    {"_aldodevel_vecchiaLik_grouped_function", (DL_FUNC) &_aldodevel_vecchiaLik_grouped_function, 5},
     {"_aldodevel_vecchiaLik_grouped", (DL_FUNC) &_aldodevel_vecchiaLik_grouped, 4},
     {"_aldodevel_vecchiaLik", (DL_FUNC) &_aldodevel_vecchiaLik, 5},
     {NULL, NULL, 0}

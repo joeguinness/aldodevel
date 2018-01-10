@@ -29,8 +29,8 @@ vecchiaLik_function <- function(covparms, covfun_name, y, locs, NNarray) {
     .Call('_aldodevel_vecchiaLik_function', PACKAGE = 'aldodevel', covparms, covfun_name, y, locs, NNarray)
 }
 
-vecchiaLik_grouped_function <- function(covparms, y, locs, NNlist) {
-    .Call('_aldodevel_vecchiaLik_grouped_function', PACKAGE = 'aldodevel', covparms, y, locs, NNlist)
+vecchiaLik_grouped_function <- function(covparms, covfun_name, y, locs, NNlist) {
+    .Call('_aldodevel_vecchiaLik_grouped_function', PACKAGE = 'aldodevel', covparms, covfun_name, y, locs, NNlist)
 }
 
 vecchiaLik_grouped <- function(covparms, y, locs, NNlist) {

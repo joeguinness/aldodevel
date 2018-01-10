@@ -15,14 +15,14 @@ orderMaxMinFast <- function( locs, numpropose ){
     orderinds <- rep(0L,n)
     # pick a center point
     mp <- matrix(colMeans(locs),1,d)
-    distmp <- rdist(locs,mp)
+    distmp <- fields::rdist(locs,mp)
     ordermp <- order(distmp)
     orderinds[1] = ordermp[1]
     remaininginds <- remaininginds[remaininginds!=orderinds[1]]
     for( j in 2:(n-1) ){
         randinds <- sample(remaininginds,min(numpropose,length(remaininginds)))
-        distarray <-  rdist(locs[orderinds[1:j-1],,drop=FALSE],locs[randinds,,drop=FALSE])
-        bestind <- which(colMins(distarray) ==  max( colMins( distarray ) ))
+        distarray <-  fields::rdist(locs[orderinds[1:j-1],,drop=FALSE],locs[randinds,,drop=FALSE])
+        bestind <- which(matrixStats::colMins(distarray) ==  max( matrixStats::colMins( distarray ) ))
         orderinds[j] <- randinds[bestind[1]]
         remaininginds <- remaininginds[remaininginds!=orderinds[j]]
     }
@@ -92,7 +92,9 @@ orderMaxMinLocal <- function(locs){
     usedcube <- array(0,dim(indcube))
 
     # define grid locations and order the grid boxes
-    gridlocs <- simulateGrid(c(nside,nside),0.01)
+    #gridlocs <- simulateGrid(c(nside,nside),0.01)
+    gridlocs <- as.matrix(expand.grid(1:nside,1:nside)) +
+                            0.01*matrix(2*nside^2,nside^2,2)
     if( nside*nside > 500 ){ # if the number of grid boxes is very large
         # use the function recursively to order them
         gridorder <- orderMaxMinLocal(gridlocs)
@@ -130,9 +132,9 @@ orderMaxMinLocal <- function(locs){
 
                 # figure out which remaining point (in 'rem') has maximum minimum
                 # distance to the already selected points (in 'used')
-                distmat <- rdist(locs[rem,,drop=FALSE],locs[used,,drop=FALSE])
+                distmat <- fields::rdist(locs[rem,,drop=FALSE],locs[used,,drop=FALSE])
                 #mindist <- apply(distmat,1,min)  # too slow
-                mindist <- rowMins(distmat)
+                mindist <- matrixStats::rowMins(distmat)
                 whichind <- which( mindist == max(mindist) )[1]
                 nextind <- rem[whichind]
 
@@ -199,6 +201,40 @@ spacefill_kdtree <- function(locs, m = 50){
             }
         }
     }
+    return(ord)
+}
+
+
+
+order_maxmin <- function(locs){
+
+    # get number of locs
+    n <- nrow(locs)
+    m <- round(sqrt(n))
+    # m is number of neighbors to search over
+    # get the past and future nearest neighbors
+    NNall <- FNN::get.knn( locs, k = m )$nn.index
+    # pick a random ordering
+    index_in_position <- c( sample(n), rep(NA,n) )
+    position_of_index <- order(index_in_position[1:n])
+    # loop over the first n/4 locations
+    # move an index to the end if it is a
+    # near neighbor of a previous location
+    #nmoved <- 0
+    curlen <- n
+    curpos <- 1
+    for(j in 1: round(n/2) ){
+        nneigh <- round( m*( 1 - j/n ) )
+        neighbors <- NNall[index_in_position[j],1:nneigh]
+        if( min( position_of_index[neighbors] ) < j ){
+            curlen <- curlen + 1
+            position_of_index[ index_in_position[j] ] <- curlen
+            index_in_position[curlen] <- index_in_position[j]
+            index_in_position[j] <- NA
+        }
+        if( j - (curlen - n) > n/4) break
+    }
+    ord <- index_in_position[ !is.na( index_in_position ) ]
     return(ord)
 }
 
