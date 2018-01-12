@@ -215,7 +215,7 @@ order_maxmin <- function(locs){
     # get the past and future nearest neighbors
     NNall <- FNN::get.knn( locs, k = m )$nn.index
     # pick a random ordering
-    index_in_position <- c( sample(n), rep(NA,n) )
+    index_in_position <- c( sample(n), rep(NA,1*n) )
     position_of_index <- order(index_in_position[1:n])
     # loop over the first n/4 locations
     # move an index to the end if it is a
@@ -223,21 +223,70 @@ order_maxmin <- function(locs){
     #nmoved <- 0
     curlen <- n
     curpos <- 1
-    for(j in 1: round(n/2) ){
-        nneigh <- round( m*( 1 - j/n ) )
+    nmoved <- 0
+    for(j in 2:(2*n) ){
+        nneigh <- round( min(m,n/(j-nmoved+1)) )
         neighbors <- NNall[index_in_position[j],1:nneigh]
-        if( min( position_of_index[neighbors] ) < j ){
+        if( min( position_of_index[neighbors], na.rm = TRUE ) < j ){
+            nmoved <- nmoved+1
             curlen <- curlen + 1
             position_of_index[ index_in_position[j] ] <- curlen
             index_in_position[curlen] <- index_in_position[j]
             index_in_position[j] <- NA
         }
-        if( j - (curlen - n) > n/4) break
+        if( j - nmoved > n/4){cat("breaking \n");  break }
     }
     ord <- index_in_position[ !is.na( index_in_position ) ]
+    cat(nmoved)
+
     return(ord)
 }
 
 
 
+order_maxmin2 <- function(locs){
 
+    # get number of locs
+    n <- nrow(locs)
+    m <- 200
+    # m is number of neighbors to search over
+    # get the past and future nearest neighbors
+    NNall <- FNN::get.knn( locs, k = m )$nn.index
+    # pick a random ordering
+    index_in_position <- c( sample(n), rep(NA,1*n) )
+    position_of_index <- order(index_in_position[1:n])
+    # loop over the first n/4 locations
+    # move an index to the end if it is a
+    # near neighbor of a previous location
+    #nmoved <- 0
+    curlen <- n
+    curpos <- 1
+    nmoved <- 0
+    for(j in 2:(2*n) ){
+        nneigh <- round( n/(j-nmoved+1) )
+        if(nneigh > m){
+            #print(index_in_position[j])
+            jj <- index_in_position[j]
+            tmp <- FNN::get.knnx( locs[(1:n)[-jj],,drop=FALSE],
+                                  locs[jj,,drop=FALSE],
+                                  k = nneigh)$nn.index
+
+            neighbors <- c(tmp)
+            #print(neighbors)
+        } else {
+            neighbors <- NNall[index_in_position[j],1:nneigh]
+        }
+        if( min( position_of_index[neighbors], na.rm = TRUE ) < j ){
+            nmoved <- nmoved+1
+            curlen <- curlen + 1
+            position_of_index[ index_in_position[j] ] <- curlen
+            index_in_position[curlen] <- index_in_position[j]
+            index_in_position[j] <- NA
+        }
+        if( j - nmoved > n/4){cat("breaking \n");  break }
+    }
+    ord <- index_in_position[ !is.na( index_in_position ) ]
+    cat(nmoved)
+
+    return(ord)
+}

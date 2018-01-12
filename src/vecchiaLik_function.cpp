@@ -21,21 +21,12 @@ NumericVector vecchiaLik_function(NumericVector covparms, StringVector covfun_na
     int k;
     int el;
 
-    // covariance parameters
-    int nparms = covparms.length();
-
-    double cparms[nparms-1];                                 // number of covariance parameters
-    for(k=0; k<nparms-1; k++){ cparms[k] = covparms[k]; }   // assign covariance parameters
-    double nugget = covparms[0]*covparms[nparms-1];           // nugget is always last
-
     NumericVector ll(1);              // loglikelihood to be returned
     int n = y.length();               // length of response
-    int dim = locs.ncol();            // dimension of input locations
     int m = NNarray.ncol();           // number of neighbors + 1
     double d;                         // utility double
 
     // subset of locations and response values
-    std::vector<std::vector<double> > locsub(m, std::vector<double>(dim, 0));
     double ysub[m];
 
     // cholesky factor
@@ -49,20 +40,69 @@ NumericVector vecchiaLik_function(NumericVector covparms, StringVector covfun_na
     // the user inputs a covariance function name as a string (covfun_name)
     // then based on the string, we assign a pointer to an allowable
     // c++ covariance function
+    double cparms[3];       // non-nugget cov parameters
+    double nugget;
     double (*p_covfun)(const std::vector<double>* loc1, const std::vector<double>* loc2, double* cparms);
+
     // convert StringVector to std::string for .compare() below
     std::string covfun_name_string;
     covfun_name_string = covfun_name[0];
 
+    // set p_covfun, cparms, and locations based on covfun_name_string
     if( covfun_name_string.compare("maternIsotropic") == 0 )
     {
+        // covariance parameters
+        for(k=0; k<3; k++){ cparms[k] = covparms[k]; }  // re-assign non-nugget parameters
+        nugget = covparms[0]*covparms[3];        // separate variable for nugget
         p_covfun = &MaternIsotropic;
-    } else {
+    }
+    else if( covfun_name_string.compare("maternSphere") == 0 )
+    {
+        for(k=0; k<3; k++){ cparms[k] = covparms[k]; }  // re-assign non-nugget parameters
+        nugget = covparms[0]*covparms[3];        // separate variable for nugget
+        double lonrad;
+        double latrad;
+        Rcpp::NumericMatrix xyz(n, 3);
+        for(i = 0; i < n; i++){
+            lonrad = 2*M_PI*locs(i,0)/360;
+            latrad = 2*M_PI*(locs(i,1)+90)/360;
+            xyz(i,0) = sin(latrad)*cos(lonrad);
+            xyz(i,1) = sin(latrad)*sin(lonrad);
+            xyz(i,2) = cos(latrad);
+        }
+        locs = xyz;
+        p_covfun = &MaternIsotropic;
+    }
+    else if( covfun_name_string.compare("maternSphereTime") == 0 )
+    {
+        cparms[0] = covparms[0];                    // variance
+        cparms[1] = 1;                              // scale locations below, so set range = 1
+        cparms[2] = covparms[3];                    // smoothness
+        nugget = covparms[0]*covparms[4];    // nugget
+        double lonrad;
+        double latrad;
+        Rcpp::NumericMatrix xyzt(n, 4);
+        for(i = 0; i < n; i++){
+            lonrad = 2*M_PI*locs(i,0)/360;
+            latrad = 2*M_PI*(locs(i,1)+90)/360;
+            xyzt(i,0) = sin(latrad)*cos(lonrad)/covparms[1];
+            xyzt(i,1) = sin(latrad)*sin(lonrad)/covparms[1];
+            xyzt(i,2) = cos(latrad)/covparms[1];
+            xyzt(i,3) = locs(i,2)/covparms[2];
+        }
+        locs = xyzt;
+        p_covfun = &MaternIsotropic;
+    }
+    else
+    {
         cout << "Unrecognized Covariance Function Name \n";
         assert(0);
     }
 
+    int dim = locs.ncol();            // dimension of input locations
+    std::vector<std::vector<double> > locsub(m, std::vector<double>(dim, 0));
 
+    // big loop over observations starts here
     for(i=m; i<n+1; i++){
 
         // first, fill in ysub and locsub in reverse order

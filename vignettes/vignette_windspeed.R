@@ -1,6 +1,8 @@
 
 # analyze the averaged jason3 wind speed data
-library("aldodevel")
+#library("aldodevel")
+devtools::load_all(".")
+
 
 # loads in object
 load("datasets/jason3_windspeed_avg.RData")
@@ -23,16 +25,58 @@ xyz <- cbind(x,y,z)
 coords <- cbind(xyz,time)
 
 # get ordering
-ord <- spacefill_kdtree(xyz)
+ord <- order_maxmin(xyz)
 plot(y[ord[1:1000]],z[ord[1:1000]])
-
+xyzord <- xyz[ord,]
 coordsord <- coords[ord,]
 windspeedord <- windspeed[ord]
 
 # get ordering from spatial locations
-NNarray <- findOrderedNN_kdtree(xyz[ord,],m=20)
+NNarray <- findOrderedNN_kdtree(xyzord,m=20)
 X <- as.matrix( rep(1,length(windspeed)) )
 Xord <- X[ord,,drop=FALSE] # don't actually need this since all ones
+
+
+## first analysis: ignore temporal dimension
+
+# using maternSphere
+funtomax1 <- function( logparms ){
+    parms <- exp(logparms)
+    parms[5] <- logparms[5]
+    loglik <- vecchiaLik_function(parms[1:4],"maternSphere",windspeedord-parms[5],
+                                  cbind(lon[ord],lat[ord]),NNarray)
+    return(-loglik)
+}
+
+startparms <- c(10,0.1,0.8,0.001,12)
+fit1 <- optim(c(log(startparms[1:4]),startparms[5]),funtomax1,control=list(trace=5,maxit=500))
+
+
+## second analysis: space-time covariance
+
+# using maternSphereTime
+funtomax2 <- function( logparms ){
+    parms <- exp(logparms)
+    parms[6] <- logparms[6]
+    loglik <- vecchiaLik_function(parms[1:5],"maternSphereTime",windspeedord-parms[6],
+                                  cbind(lon[ord],lat[ord],time[ord]),NNarray)
+    return(-loglik)
+}
+startparms <- c(10,0.1,6e4,0.8,0.001,12)
+fit2 <- optim(c(log(startparms[1:5]),startparms[6]),funtomax2,control=list(trace=5,maxit=500))
+
+
+
+
+
+
+
+
+parms <- exp(fit1$par)
+funtomax1( log(startparms) )
+funtomax2( log(startparms) )
+
+
 
 funtomax <- function( logparms ){
 

@@ -10,12 +10,12 @@ x2 <- (1:nvec[2])/nvec[2]
 locs <- as.matrix(expand.grid(x1,x2))
 
 # generate an ordering
-system.time( ord1 <- sample(n) )
-system.time( ord2 <- orderMaxMinLocal(locs) )
-system.time( ord3 <- order_maxmin(locs) )
+system.time( ord1 <- orderMaxMinLocal(locs) )
+system.time( ord2 <- order_maxmin(locs) )
+system.time( ord3 <- order_maxmin2(locs) )
 
 par(mfrow=c(1,3))
-ntoplot <- 400
+ntoplot <- 421
 
 ord <- ord1[1:ntoplot]
 plot( locs[ord,1], locs[ord,2] )
