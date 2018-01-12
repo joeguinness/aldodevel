@@ -5,14 +5,6 @@ getLinvEntries <- function(covparms, covfun_name, locs, NNarray) {
     .Call('_aldodevel_getLinvEntries', PACKAGE = 'aldodevel', covparms, covfun_name, locs, NNarray)
 }
 
-LinvMultFromEntries <- function(LinvEntries, z, NNarray) {
-    .Call('_aldodevel_LinvMultFromEntries', PACKAGE = 'aldodevel', LinvEntries, z, NNarray)
-}
-
-LMultFromEntries <- function(LinvEntries, z, NNarray) {
-    .Call('_aldodevel_LMultFromEntries', PACKAGE = 'aldodevel', LinvEntries, z, NNarray)
-}
-
 MaternFun <- function(distmat, covparms) {
     .Call('_aldodevel_MaternFun', PACKAGE = 'aldodevel', distmat, covparms)
 }
@@ -27,6 +19,22 @@ OrderedGroupCompLik <- function(covparms, y, locs, NNlist) {
 
 vecchiaLik_function <- function(covparms, covfun_name, y, locs, NNarray) {
     .Call('_aldodevel_vecchiaLik_function', PACKAGE = 'aldodevel', covparms, covfun_name, y, locs, NNarray)
+}
+
+vecchiaLoglik <- function(covparms, covfun_name, y, locs, NNarray) {
+    .Call('_aldodevel_vecchiaLoglik', PACKAGE = 'aldodevel', covparms, covfun_name, y, locs, NNarray)
+}
+
+vecchiaLinverse <- function(covparms, covfun_name, locs, NNarray) {
+    .Call('_aldodevel_vecchiaLinverse', PACKAGE = 'aldodevel', covparms, covfun_name, locs, NNarray)
+}
+
+LinvMultFromEntries <- function(LinvEntries, z, NNarray) {
+    .Call('_aldodevel_LinvMultFromEntries', PACKAGE = 'aldodevel', LinvEntries, z, NNarray)
+}
+
+LMultFromEntries <- function(LinvEntries, z, NNarray) {
+    .Call('_aldodevel_LMultFromEntries', PACKAGE = 'aldodevel', LinvEntries, z, NNarray)
 }
 
 vecchiaLik_grouped_function <- function(covparms, covfun_name, y, locs, NNlist) {

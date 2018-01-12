@@ -45,6 +45,9 @@ ll_ungrouped <- vecchiaLik(covparms,"maternIsotropic",yord,locsord,NNarray)
 t2 <- proc.time()[3]
 ll_ungrouped_chol <- vecchiaLik_function(covparms,"maternIsotropic",yord,locsord,NNarray)
 t3 <- proc.time()[3]
+ll3 <- vecchiaLoglik(covparms,"maternIsotropic",yord,locsord,NNarray)
+ll3 - ll_ungrouped_chol
+
 ll_ungrouped - ll_ungrouped_chol
 t2-t1
 t3-t2

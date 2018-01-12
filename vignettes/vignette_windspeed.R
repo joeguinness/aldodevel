@@ -49,7 +49,7 @@ funtomax1 <- function( logparms ){
 }
 
 startparms <- c(10,0.1,0.8,0.001,12)
-fit1 <- optim(c(log(startparms[1:4]),startparms[5]),funtomax1,control=list(trace=5,maxit=500))
+fit1 <- optim(c(log(startparms[1:4]),startparms[5]),funtomax1,control=list(trace=5,maxit=100))
 
 
 ## second analysis: space-time covariance
@@ -63,11 +63,42 @@ funtomax2 <- function( logparms ){
     return(-loglik)
 }
 startparms <- c(10,0.1,6e4,0.8,0.001,12)
-fit2 <- optim(c(log(startparms[1:5]),startparms[6]),funtomax2,control=list(trace=5,maxit=500))
+fit2 <- optim(c(log(startparms[1:5]),startparms[6]),funtomax2,control=list(trace=5,maxit=100))
 
 
 
+# profile out mean and variance parameters
 
+# ignoring temporal dimension
+funtomax3 <- function( logparms ){
+    parms <- exp(logparms)
+    loglik <- proflik_mean_variance(parms,"maternSphere",windspeedord,
+                                  Xord,cbind(lon[ord],lat[ord]),NNarray)
+    return(-loglik)
+}
+startparms <- c(0.2,0.8,0.001)
+fit3 <- optim(log(startparms),funtomax3,control=list(trace=5,maxit=100))
+
+
+# with temporal dimension
+funtomax4 <- function( logparms ){
+    parms <- exp(logparms)
+    loglik <- proflik_mean_variance(parms,"maternSphereTime",windspeedord,
+                                    Xord,cbind(lon[ord],lat[ord],time[ord]),NNarray)
+    return(-loglik)
+}
+startparms <- c(0.1,6e4,0.8,0.001)
+fit4 <- optim(log(startparms),funtomax4,control=list(trace=5,maxit=100))
+
+# with temporal dimension
+funtomax4 <- function( logparms ){
+    parms <- exp(logparms)
+    loglik <- proflik_variance(parms,"maternSphereTime",windspeedord - 7.53,
+                                cbind(lon[ord],lat[ord],time[ord]),NNarray)
+    return(-loglik)
+}
+startparms <- c(0.1,6e4,0.8,0.001)
+fit4 <- optim(log(startparms),funtomax4,control=list(trace=5,maxit=100))
 
 
 

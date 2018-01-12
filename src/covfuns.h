@@ -2,6 +2,7 @@
 #ifndef COVFUNS_H
 #define COVFUNS_H
 
+
 inline double MaternFunction(double d, double *cparms){
 
     // has special cases for 1/2 and 3/2
